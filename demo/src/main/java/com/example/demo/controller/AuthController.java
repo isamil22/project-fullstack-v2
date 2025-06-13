@@ -3,7 +3,9 @@ package com.example.demo.controller;
 import com.example.demo.dto.ChangePasswordRequest;
 import com.example.demo.dto.EmailConfirmationRequest;
 import com.example.demo.dto.LoginRequest;
+import com.example.demo.dto.UserDTO;
 import com.example.demo.exception.ResourceNotFoundException;
+import com.example.demo.mapper.UserMapper;
 import com.example.demo.model.User;
 import com.example.demo.service.JwtService;
 import com.example.demo.service.UserService;
@@ -25,6 +27,7 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final UserService userService;
     private final JwtService jwtService;
+    private final UserMapper userMapper;
 
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody LoginRequest loginRequest){
@@ -62,7 +65,6 @@ public class AuthController {
         }
     }
 
-    //update
     @GetMapping("/user/role")
     public ResponseEntity<String> getUserRole() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -76,13 +78,20 @@ public class AuthController {
         return ResponseEntity.notFound().build();
     }
 
-    //update
     @GetMapping("/user/{id}")
     public ResponseEntity<String> getUserEmailById(@PathVariable Long id) {
-        User user = userService.getUserById(id); // Ensure this method exists in your UserService
+        User user = userService.getUserById(id);
         if (user != null) {
             return ResponseEntity.ok(user.getEmail());
         }
         return ResponseEntity.notFound().build();
+    }
+
+    @GetMapping("/user/profile")
+    public ResponseEntity<UserDTO> getUserProfile() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        User user = userService.getUserByEmail(email);
+        return ResponseEntity.ok(userMapper.toDTO(user));
     }
 }
