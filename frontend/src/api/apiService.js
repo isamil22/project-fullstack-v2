@@ -18,3 +18,7 @@ export const getProductById = (id) => {
 
 // You can add all your other API calls here
 // e.g., login, register, addToCart, etc.
+
+export const getHelloMessage = () => {
+    return apiService.get('/hello');
+};

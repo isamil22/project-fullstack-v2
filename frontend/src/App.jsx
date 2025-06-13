@@ -1,13 +1,8 @@
 // src/App.jsx
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import HomePage from './pages/HomePage';
-import ProductsPage from './pages/ProductsPage';
-import ProductDetailPage from './pages/ProductDetailPage';
-import CartPage from './pages/CartPage';
-import AuthPage from './pages/AuthPage';
-import ProfilePage from './pages/ProfilePage';
-import AdminDashboard from './pages/admin/AdminDashboard';
-import Navbar from './components/Navbar'; // Assuming you have a Navbar component
+import Navbar from './components/Navbar';
+import HelloPage from './pages/HelloPage'; // Import the new page
+import Footer from './components/Footer'; // 1. Import the Footer
 
 function App() {
     return (
@@ -15,20 +10,16 @@ function App() {
             <Navbar />
             <main>
                 <Routes>
-                    <Route path="/" element={<HomePage />} />
-                    <Route path="/products" element={<ProductsPage />} />
-                    <Route path="/products/:id" element={<ProductDetailPage />} />
-                    <Route path="/cart" element={<CartPage />} />
-                    <Route path="/auth" element={<AuthPage />} />
-                    <Route path="/profile" element={<ProfilePage />} />
-                    <Route path="/admin" element={<AdminDashboard />} />
-                    {/* Add other routes as needed */}
+
+                    <Route path="/hello" element={<HelloPage />} /> {/* Add the new route */}
+
                 </Routes>
             </main>
+            <Footer /> {/* 2. Add the Footer */}
+
         </BrowserRouter>
     );
 }
 
 export default App;
-frontend/src/App.jsx
 
