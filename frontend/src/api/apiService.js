@@ -53,3 +53,8 @@ export const removeCartItem = (productId) => {
 export const addToCart = (productId, quantity) => {
     return apiService.post(`/cart/add?productId=${productId}&quantity=${quantity}`);
 };
+
+
+export const createOrder = (orderData) => {
+    return apiService.post(`/orders?address=${orderData.address}&phoneNumber=${orderData.phoneNumber}`);
+};

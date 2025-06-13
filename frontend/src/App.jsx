@@ -9,6 +9,7 @@ import HelloPage from './pages/HelloPage';
 import AuthPage from './pages/AuthPage';
 import ProfilePage from './pages/ProfilePage';
 import CartPage from './pages/CartPage';
+import OrderPage from './pages/OrderPage'; // 1. Import OrderPage
 
 function App() {
     const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('token'));
@@ -36,6 +37,7 @@ function App() {
                         />
                         <Route path="/profile" element={<ProfilePage />} />
                         <Route path="/cart" element={<CartPage />} />
+                        <Route path="/order" element={<OrderPage />} /> {/* 2. Add the new route */}
                     </Routes>
                 </main>
                 <Footer />

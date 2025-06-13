@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getCart, removeCartItem } from '../api/apiService';
+import { Link } from 'react-router-dom'; // Import Link
 
 const CartPage = () => {
     const [cart, setCart] = useState(null);
@@ -21,12 +22,11 @@ const CartPage = () => {
     const handleRemove = async (productId) => {
         try {
             await removeCartItem(productId);
-            fetchCart();
+            fetchCart(); // Refresh cart after removal
         } catch (err) {
             setError('Failed to remove item from cart.');
         }
     };
-
 
     if (error) {
         return <p className="text-red-500 text-center">{error}</p>;
@@ -57,6 +57,15 @@ const CartPage = () => {
                             </button>
                         </div>
                     ))}
+                    {/* Add Checkout Button */}
+                    <div className="text-center mt-8">
+                        <Link
+                            to="/order"
+                            className="bg-pink-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-pink-700 transition duration-300"
+                        >
+                            Proceed to Checkout
+                        </Link>
+                    </div>
                 </div>
             )}
         </div>
