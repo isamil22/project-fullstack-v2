@@ -111,3 +111,25 @@ export const updateUserRole = (userId, role) => {
 export const deleteUser = (userId) => {
     return apiService.delete(`/users/${userId}`);
 };
+
+// --- Review Functions ---
+export const addReview = (reviewData) => {
+    return apiService.post('/reviews', reviewData);
+};
+
+export const getApprovedReviews = () => {
+    return apiService.get('/reviews/approved');
+};
+
+// --- Admin Review Functions ---
+export const getPendingReviews = () => {
+    return apiService.get('/reviews/pending');
+};
+
+export const approveReview = (reviewId) => {
+    return apiService.put(`/reviews/${reviewId}/approve`);
+};
+
+export const deleteReview = (reviewId) => {
+    return apiService.delete(`/reviews/${reviewId}`);
+};

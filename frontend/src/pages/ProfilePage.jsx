@@ -1,28 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { getUserProfile, getUserOrders } from '../api/apiService';
+import { getUserProfile, getUserOrders } from '/src/api/apiService.js';
+import ReviewForm from '/src/components/ReviewForm.jsx';
 
 const ProfilePage = () => {
     const [user, setUser] = useState(null);
     const [orders, setOrders] = useState([]);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(true);
+    // This state now simply toggles the review form visibility
+    const [showReviewForm, setShowReviewForm] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
             try {
-                // Fetch profile and orders in parallel
                 const [profileResponse, ordersResponse] = await Promise.all([
                     getUserProfile(),
                     getUserOrders()
                 ]);
-
                 setUser(profileResponse.data);
-
-                // Sort orders by creation date, newest first
                 const sortedOrders = ordersResponse.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
                 setOrders(sortedOrders);
-
             } catch (err) {
                 setError('Failed to fetch your data. Please make sure you are logged in.');
                 console.error(err);
@@ -30,7 +28,6 @@ const ProfilePage = () => {
                 setLoading(false);
             }
         };
-
         fetchData();
     }, []);
 
@@ -42,9 +39,12 @@ const ProfilePage = () => {
         return <p className="text-red-500 text-center mt-10">{error}</p>;
     }
 
+    // A user is eligible to review if they have one or more orders.
+    const canReview = orders.length > 0;
+
     return (
         <div className="container mx-auto px-4 py-8">
-            {/* --- User Profile Section --- */}
+            {/* --- User Profile Information Section --- */}
             {user && (
                 <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-8 mb-10">
                     <h1 className="text-3xl font-bold text-center text-gray-800 mb-6">Your Profile</h1>
@@ -54,6 +54,22 @@ const ProfilePage = () => {
                     </div>
                 </div>
             )}
+
+            {/* --- Service Review Section --- */}
+            {canReview && (
+                <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-8 mb-10">
+                    <h2 className="text-2xl font-bold text-center text-gray-800 mb-4">Review Our Service</h2>
+                    <p className="text-center text-gray-600 mb-6">Your feedback helps us improve.</p>
+                    <button
+                        onClick={() => setShowReviewForm(!showReviewForm)}
+                        className="w-full bg-pink-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-pink-700 transition duration-300"
+                    >
+                        {showReviewForm ? 'Close Review Form' : 'Write a Review'}
+                    </button>
+                    {showReviewForm && <ReviewForm onReviewSubmitted={() => setShowReviewForm(false)} />}
+                </div>
+            )}
+
 
             {/* --- Order History Section --- */}
             <div className="max-w-4xl mx-auto">
@@ -82,8 +98,8 @@ const ProfilePage = () => {
                                     <h3 className="font-semibold mb-2 text-gray-700">Items:</h3>
                                     <ul className="list-disc list-inside space-y-2 text-gray-600">
                                         {order.orderItems.map(item => (
-                                            <li key={item.id}>
-                                                {item.quantity} x (Product ID: {item.productId}) - ${item.price.toFixed(2)} each
+                                            <li key={item.id} className="flex justify-between items-center">
+                                                <span>{item.quantity} x (Product ID: {item.productId}) - ${item.price.toFixed(2)} each</span>
                                             </li>
                                         ))}
                                     </ul>

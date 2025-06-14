@@ -1,22 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { getAllProducts, getAllOrders, deleteProduct } from '../../api/apiService.js';
+import { getAllProducts, getAllOrders, deleteProduct, getPendingReviews } from '/src/api/apiService.js';
 
 const AdminDashboard = () => {
     const [products, setProducts] = useState([]);
     const [orders, setOrders] = useState([]);
+    const [pendingReviews, setPendingReviews] = useState([]);
     const [error, setError] = useState('');
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const productsResponse = await getAllProducts();
-                setProducts(productsResponse.data.content || productsResponse.data);
+                // Fetch all dashboard data at the same time
+                const [productsResponse, ordersResponse, reviewsResponse] = await Promise.all([
+                    getAllProducts(),
+                    getAllOrders(),
+                    getPendingReviews()
+                ]);
 
-                const ordersResponse = await getAllOrders();
+                setProducts(productsResponse.data.content || productsResponse.data);
                 setOrders(ordersResponse.data);
+                setPendingReviews(reviewsResponse.data);
             } catch (err) {
-                setError('Failed to fetch data.');
+                setError('Failed to fetch dashboard data.');
+                console.error(err);
             }
         };
         fetchData();
@@ -38,7 +45,7 @@ const AdminDashboard = () => {
             <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>
             {error && <p className="text-red-500">{error}</p>}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {/* Product Management */}
                 <div className="bg-white p-6 rounded-lg shadow-md">
                     <div className="flex justify-between items-center mb-4">
@@ -71,6 +78,23 @@ const AdminDashboard = () => {
                         ))}
                     </ul>
                     <Link to="/admin/orders" className="text-pink-500 hover:underline mt-4 inline-block">View all orders</Link>
+                </div>
+
+                {/* Review Management Panel */}
+                <div className="bg-white p-6 rounded-lg shadow-md">
+                    <div className="flex justify-between items-center mb-4">
+                        <h2 className="text-2xl font-semibold">Pending Reviews</h2>
+                        <span className="text-2xl font-bold text-pink-500">{pendingReviews.length}</span>
+                    </div>
+                    <ul className="space-y-2">
+                        {pendingReviews.slice(0, 3).map(review => (
+                            <li key={review.id} className="border-b pb-2 text-sm">
+                                <p className="text-gray-600 truncate">"{review.content}"</p>
+                                <p className="text-gray-400">by {review.userEmail}</p>
+                            </li>
+                        ))}
+                    </ul>
+                    <Link to="/admin/reviews" className="text-pink-500 hover:underline mt-4 inline-block">Manage all reviews</Link>
                 </div>
             </div>
         </div>

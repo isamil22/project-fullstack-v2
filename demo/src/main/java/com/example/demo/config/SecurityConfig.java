@@ -42,6 +42,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/change-password").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/**").permitAll()     // Allow all GET requests to /api/**
                         .requestMatchers("/images/**").permitAll()  // Permit access to all images
+                        .requestMatchers(HttpMethod.GET, "/api/reviews/approved").permitAll() // <-- ADD THIS LINE
+
 
 
 
