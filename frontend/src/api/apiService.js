@@ -60,7 +60,7 @@ export const createOrder = (orderData) => {
     return apiService.post(`/orders?address=${orderData.address}&phoneNumber=${orderData.phoneNumber}`);
 };
 
-// --- NEW ADMIN FUNCTIONS ---
+// --- ADMIN FUNCTIONS ---
 export const createProduct = (productData) => {
     return apiService.post('/products', productData, {
         headers: {
@@ -89,6 +89,20 @@ export const getAllOrders = () => {
     return apiService.get('/orders');
 };
 
+export const updateOrderStatus = (orderId, status) => {
+    return apiService.put(`/orders/${orderId}/status?status=${status}`);
+};
+
+
+// --- USER MANAGEMENT ADMIN FUNCTIONS ---
 export const getAllUsers = () => {
     return apiService.get('/users');
+};
+
+export const updateUserRole = (userId, role) => {
+    return apiService.put(`/users/${userId}/role?role=${role}`);
+};
+
+export const deleteUser = (userId) => {
+    return apiService.delete(`/users/${userId}`);
 };

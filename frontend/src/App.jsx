@@ -14,7 +14,9 @@ import AdminLayout from './components/AdminLayout';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminProductsPage from './pages/admin/AdminProductsPage';
 import AdminProductForm from './pages/admin/AdminProductForm';
-import { getUserProfile } from './api/apiService'; // Import the service function
+import AdminOrdersPage from './pages/admin/AdminOrdersPage';
+import AdminUsersPage from './pages/admin/AdminUsersPage'; // Import the new users page component
+import { getUserProfile } from './api/apiService';
 
 function App() {
     // State for authentication status
@@ -80,6 +82,8 @@ function App() {
                             <Route path="products" element={<AdminProductsPage />} />
                             <Route path="products/new" element={<AdminProductForm />} />
                             <Route path="products/edit/:id" element={<AdminProductForm />} />
+                            <Route path="orders" element={<AdminOrdersPage />} />
+                            <Route path="users" element={<AdminUsersPage />} />
                         </Route>
                     </Routes>
                 </main>
@@ -90,4 +94,6 @@ function App() {
 }
 
 export default App;
+
+
 
