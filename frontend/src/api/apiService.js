@@ -14,6 +14,7 @@ apiService.interceptors.request.use(config => {
     return Promise.reject(error);
 });
 
+// --- Existing Functions ---
 export const getAllProducts = () => {
     return apiService.get('/products');
 };
@@ -57,4 +58,37 @@ export const addToCart = (productId, quantity) => {
 
 export const createOrder = (orderData) => {
     return apiService.post(`/orders?address=${orderData.address}&phoneNumber=${orderData.phoneNumber}`);
+};
+
+// --- NEW ADMIN FUNCTIONS ---
+export const createProduct = (productData) => {
+    return apiService.post('/products', productData, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        },
+    });
+};
+
+export const updateProduct = (id, productData) => {
+    return apiService.put(`/products/${id}`, productData, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        },
+    });
+};
+
+export const deleteProduct = (id) => {
+    return apiService.delete(`/products/${id}`);
+};
+
+export const getAllCategories = () => {
+    return apiService.get('/categories');
+};
+
+export const getAllOrders = () => {
+    return apiService.get('/orders');
+};
+
+export const getAllUsers = () => {
+    return apiService.get('/users');
 };

@@ -1,35 +1,20 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { loginUser, registerUser } from '../api/apiService';
+import { loginUser, registerUser, getUserProfile } from '../api/apiService';
 
-/**
- * AuthPage component for user login and registration.
- * @param {object} props - The component props.
- * @param {function} props.setIsAuthenticated - Function to update the authentication state in the parent component.
- */
 const AuthPage = ({ setIsAuthenticated }) => {
-    // State to toggle between Login and Register forms
     const [isLogin, setIsLogin] = useState(true);
-    // State for form data
     const [formData, setFormData] = useState({ email: '', password: '' });
-    // State for error messages
     const [error, setError] = useState('');
-    // State for success messages
     const [success, setSuccess] = useState('');
     const navigate = useNavigate();
 
-    /**
-     * Handles changes in form input fields.
-     */
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
         setError('');
         setSuccess('');
     };
 
-    /**
-     * Handles form submission for both login and registration.
-     */
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
@@ -37,28 +22,38 @@ const AuthPage = ({ setIsAuthenticated }) => {
 
         try {
             if (isLogin) {
-                // Handle login
+                // Step 1: Log in and get the token
                 const response = await loginUser(formData);
                 localStorage.setItem('token', response.data);
-                setIsAuthenticated(true); // Update global auth state
+
+                // This will trigger the useEffect in App.jsx to fetch the role and update state
+                setIsAuthenticated(true);
                 setSuccess('Login successful! Redirecting...');
-                setTimeout(() => navigate('/'), 1500); // Redirect to home page
+
+                // Step 2: Fetch profile to determine where to redirect
+                const profileResponse = await getUserProfile();
+                const userRole = profileResponse.data.role;
+
+                // Step 3: Redirect based on the role
+                if (userRole === 'ADMIN') {
+                    navigate('/admin/dashboard');
+                } else {
+                    navigate('/');
+                }
             } else {
                 // Handle registration
                 await registerUser(formData);
                 setSuccess('Registration successful! You can now log in.');
-                setIsLogin(true); // Switch to the login form
+                setIsLogin(true);
             }
         } catch (err) {
-            // Set error message from API response or a generic one
             const errorMessage = err.response?.data?.message || err.response?.data || 'An error occurred. Please try again.';
             setError(errorMessage);
+            setIsAuthenticated(false); // Ensure auth state is false on error
         }
     };
 
-    /**
-     * Toggles between the login and registration forms.
-     */
+    // ... toggleForm and return statement are unchanged
     const toggleForm = () => {
         setIsLogin(!isLogin);
         setError('');
