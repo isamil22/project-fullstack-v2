@@ -10,12 +10,13 @@ import AuthPage from './pages/AuthPage';
 import ProfilePage from './pages/ProfilePage';
 import CartPage from './pages/CartPage';
 import OrderPage from './pages/OrderPage';
+// UserOrdersPage is no longer needed
 import AdminLayout from './components/AdminLayout';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminProductsPage from './pages/admin/AdminProductsPage';
 import AdminProductForm from './pages/admin/AdminProductForm';
 import AdminOrdersPage from './pages/admin/AdminOrdersPage';
-import AdminUsersPage from './pages/admin/AdminUsersPage'; // Import the new users page component
+import AdminUsersPage from './pages/admin/AdminUsersPage';
 import { getUserProfile } from './api/apiService';
 
 function App() {
@@ -75,6 +76,7 @@ function App() {
                         <Route path="/profile" element={<ProfilePage />} />
                         <Route path="/cart" element={<CartPage />} />
                         <Route path="/order" element={<OrderPage />} />
+                        {/* The /my-orders route is now removed */}
 
                         {/* Admin Routes */}
                         <Route path="/admin" element={<AdminLayout />}>

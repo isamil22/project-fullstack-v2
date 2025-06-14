@@ -37,6 +37,7 @@ const Navbar = ({ isAuthenticated, setIsAuthenticated, userRole }) => {
                             {isAuthenticated ? (
                                 <>
                                     <Link to="/cart" className="text-gray-500 hover:text-pink-500 px-3 py-2 rounded-md text-sm font-medium">Cart</Link>
+                                    {/* The "My Orders" link is removed as it's now part of the profile page */}
                                     <Link to="/profile" className="text-gray-500 hover:text-pink-500 px-3 py-2 rounded-md text-sm font-medium">Profile</Link>
                                     <button
                                         onClick={handleLogout}
@@ -80,6 +81,7 @@ const Navbar = ({ isAuthenticated, setIsAuthenticated, userRole }) => {
                     {isAuthenticated ? (
                         <>
                             <Link to="/cart" className="text-gray-500 hover:bg-pink-500 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Cart</Link>
+                            {/* The "My Orders" link is removed here as well */}
                             <Link to="/profile" className="text-gray-500 hover:bg-pink-500 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Profile</Link>
                             <button
                                 onClick={handleLogout}

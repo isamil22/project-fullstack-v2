@@ -60,6 +60,11 @@ export const createOrder = (orderData) => {
     return apiService.post(`/orders?address=${orderData.address}&phoneNumber=${orderData.phoneNumber}`);
 };
 
+// --- New Function for User Orders ---
+export const getUserOrders = () => {
+    return apiService.get('/orders/user');
+};
+
 // --- ADMIN FUNCTIONS ---
 export const createProduct = (productData) => {
     return apiService.post('/products', productData, {
