@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const apiService = axios.create({
-    baseURL: 'http://localhost:8080/api', // This calls the backend directly
+    baseURL: '/api', // Correct: Use the relative path for the proxy
 });
 
 apiService.interceptors.request.use(config => {

@@ -33,11 +33,12 @@ const UserOrdersPage = () => {
     }
 
     return (
-        <div className="container mx-auto px-4 py-8">
-            <h1 className="text-3xl font-bold text-center text-gray-800 mb-8">My Order History</h1>
+        // The container div and title have been removed to make this component embeddable
+        <div>
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">My Order History</h2>
 
             {orders.length > 0 ? (
-                <div className="max-w-4xl mx-auto space-y-6">
+                <div className="space-y-6">
                     {orders.map(order => (
                         <div key={order.id} className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
                             <div className="flex justify-between items-center border-b pb-3 mb-3">
