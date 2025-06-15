@@ -16,8 +16,8 @@ apiService.interceptors.request.use(config => {
 });
 
 // --- Existing Functions ---
-export const getAllProducts = () => {
-    return apiService.get('/products');
+export const getAllProducts = (params) => {
+    return apiService.get('/products', { params });
 };
 
 export const getProductById = (id) => {
