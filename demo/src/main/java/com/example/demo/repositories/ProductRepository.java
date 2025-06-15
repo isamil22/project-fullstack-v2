@@ -19,4 +19,7 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
 
     @Query("SELECT new com.example.demo.dto.ProductListDTO(p.id, p.name, p.description, p.price, p.quantity, p.image, p.brand) FROM Product p WHERE p.bestseller = true")
     Page<ProductListDTO> findBestsellers(Pageable pageable);
+
+    @Query("SELECT new com.example.demo.dto.ProductListDTO(p.id, p.name, p.description, p.price, p.quantity, p.image, p.brand) FROM Product p WHERE p.newArrival = true")
+    Page<ProductListDTO> findNewArrivals(Pageable pageable);
 }

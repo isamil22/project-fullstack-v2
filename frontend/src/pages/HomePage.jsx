@@ -1,23 +1,28 @@
-// isamil22/project-fullstack/project-fullstack-fd48dbc27313e0e58ad38b291978319a319d1734/frontend/src/pages/HomePage.jsx
 import React, { useState, useEffect } from 'react';
-import { getBestsellers, getApprovedReviews } from '../api/apiService';
+import { getBestsellers, getNewArrivals, getApprovedReviews } from '../api/apiService';
 import ProductCard from '../components/ProductCard';
 
 const HomePage = () => {
     const [bestsellers, setBestsellers] = useState([]);
+    const [newArrivals, setNewArrivals] = useState([]);
     const [reviews, setReviews] = useState([]);
     const [error, setError] = useState(null);
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [productsResponse, reviewsResponse] = await Promise.all([
+                const [bestsellersResponse, newArrivalsResponse, reviewsResponse] = await Promise.all([
                     getBestsellers(),
+                    getNewArrivals(),
                     getApprovedReviews()
                 ]);
 
-                const productsArray = Array.isArray(productsResponse.data) ? productsResponse.data : productsResponse.data.content;
-                setBestsellers(productsArray);
+                const bestsellersArray = Array.isArray(bestsellersResponse.data) ? bestsellersResponse.data : bestsellersResponse.data.content;
+                setBestsellers(bestsellersArray);
+
+                const newArrivalsArray = Array.isArray(newArrivalsResponse.data) ? newArrivalsResponse.data : newArrivalsResponse.data.content;
+                setNewArrivals(newArrivalsArray);
+
                 setReviews(reviewsResponse.data);
 
             } catch (err) {
@@ -36,6 +41,15 @@ const HomePage = () => {
                 {bestsellers.map(product => (
                     <ProductCard key={product.id} product={product} />
                 ))}
+            </div>
+
+            <div className="mt-16">
+                <h2 className="text-3xl font-bold text-center text-pink-500 mb-8">New Arrivals</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+                    {newArrivals.map(product => (
+                        <ProductCard key={product.id} product={product} />
+                    ))}
+                </div>
             </div>
 
             {/* Approved Reviews Section */}

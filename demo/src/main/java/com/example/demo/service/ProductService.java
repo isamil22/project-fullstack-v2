@@ -1,4 +1,3 @@
-// isamil22/project-fullstack/project-fullstack-fd48dbc27313e0e58ad38b291978319a319d1734/demo/src/main/java/com/example/demo/service/ProductService.java
 package com.example.demo.service;
 
 import com.example.demo.dto.ProductDTO;
@@ -12,7 +11,7 @@ import com.example.demo.repositories.ProductRepository;
 import com.example.demo.specification.ProductSpecification;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value; // 1. ADD THIS IMPORT
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -34,11 +33,8 @@ public class ProductService {
     private final ProductMapper productMapper;
     private final ProductSpecification productSpecification;
 
-    // 2. INJECT THE PATH FROM application.properties
     @Value("${file.upload-dir}")
     private String uploadDir;
-
-    // The old static UPLOAD_DIR variable has been removed.
 
     @Transactional
     public ProductDTO createProduct(ProductDTO productDTO, MultipartFile image) throws IOException {
@@ -49,7 +45,7 @@ public class ProductService {
         product.setCategory(category);
         product.setBrand(productDTO.getBrand());
         product.setBestseller(productDTO.isBestseller());
-
+        product.setNewArrival(productDTO.isNewArrival());
 
         if (image != null && !image.isEmpty()) {
             String fileName = saveImage(image);
@@ -74,6 +70,7 @@ public class ProductService {
         existingProduct.setCategory(category);
         existingProduct.setBrand(productDTO.getBrand());
         existingProduct.setBestseller(productDTO.isBestseller());
+        existingProduct.setNewArrival(productDTO.isNewArrival());
 
         if (image != null && !image.isEmpty()) {
             String fileName = saveImage(image);
@@ -92,6 +89,10 @@ public class ProductService {
 
     public Page<ProductListDTO> getBestsellers(Pageable pageable) {
         return productRepository.findBestsellers(pageable);
+    }
+
+    public Page<ProductListDTO> getNewArrivals(Pageable pageable) {
+        return productRepository.findNewArrivals(pageable);
     }
 
     @Transactional
@@ -125,7 +126,6 @@ public class ProductService {
     private String saveImage(MultipartFile image) throws IOException {
         String fileName = UUID.randomUUID().toString() + "_" + image.getOriginalFilename();
 
-        // 3. USE THE INJECTED 'uploadDir' VARIABLE
         Path path = Paths.get(uploadDir + "/images/" + fileName);
 
         Files.createDirectories(path.getParent());

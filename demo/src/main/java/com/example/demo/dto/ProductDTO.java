@@ -1,4 +1,3 @@
-// isamil22/project-fullstack/project-fullstack-fd48dbc27313e0e58ad38b291978319a319d1734/demo/src/main/java/com/example/demo/dto/ProductDTO.java
 package com.example.demo.dto;
 
 import jakarta.validation.constraints.NotBlank;
@@ -25,8 +24,9 @@ public class ProductDTO {
     private List<CommentDTO> comments;
 
     @NotBlank(message = "Brand is required")
-    private String brand; // Added brand
+    private String brand;
     private boolean bestseller;
+    private boolean newArrival; // Added for new arrivals
 
     @NotNull(message = "Category ID is required for a product")
     private Long categoryId;

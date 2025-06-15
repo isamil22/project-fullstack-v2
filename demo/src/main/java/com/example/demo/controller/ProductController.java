@@ -30,6 +30,13 @@ public class ProductController {
         return ResponseEntity.ok(bestsellers);
     }
 
+    @GetMapping("/new-arrivals")
+    public ResponseEntity<Page<ProductListDTO>> getNewArrivals(
+            @PageableDefault(size = 4) Pageable pageable) {
+        Page<ProductListDTO> newArrivals = productService.getNewArrivals(pageable);
+        return ResponseEntity.ok(newArrivals);
+    }
+
     @GetMapping("/category/{categoryId}")
     public ResponseEntity<Page<ProductListDTO>> getProductsByCategory(
             @PathVariable Long categoryId,

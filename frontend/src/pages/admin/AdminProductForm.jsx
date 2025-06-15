@@ -1,4 +1,3 @@
-// isamil22/project-fullstack/project-fullstack-fd48dbc27313e0e58ad38b291978319a319d1734/frontend/src/pages/admin/AdminProductForm.jsx
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getProductById, createProduct, updateProduct, getAllCategories } from '../../api/apiService.js';
@@ -13,7 +12,8 @@ const AdminProductForm = () => {
         quantity: '',
         brand: '',
         categoryId: '',
-        bestseller: false
+        bestseller: false,
+        newArrival: false
     });
     const [categories, setCategories] = useState([]);
     const [image, setImage] = useState(null);
@@ -118,10 +118,14 @@ const AdminProductForm = () => {
                     <label htmlFor="image" className="block text-sm font-medium text-gray-700">Product Image</label>
                     <input type="file" name="image" id="image" onChange={handleImageChange} className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-pink-50 file:text-pink-700 hover:file:bg-pink-100" />
                 </div>
-                <div>
+                <div className="flex space-x-4">
                     <label htmlFor="bestseller" className="flex items-center">
                         <input type="checkbox" name="bestseller" id="bestseller" checked={product.bestseller} onChange={handleChange} className="h-4 w-4 text-pink-600 border-gray-300 rounded focus:ring-pink-500" />
                         <span className="ml-2 text-sm font-medium text-gray-700">Mark as Bestseller</span>
+                    </label>
+                    <label htmlFor="newArrival" className="flex items-center">
+                        <input type="checkbox" name="newArrival" id="newArrival" checked={product.newArrival} onChange={handleChange} className="h-4 w-4 text-pink-600 border-gray-300 rounded focus:ring-pink-500" />
+                        <span className="ml-2 text-sm font-medium text-gray-700">Mark as New Arrival</span>
                     </label>
                 </div>
                 <div>
