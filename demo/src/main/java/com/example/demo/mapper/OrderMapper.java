@@ -4,36 +4,47 @@ import com.example.demo.dto.OrderDTO;
 import com.example.demo.dto.OrderItemDTO;
 import com.example.demo.model.Order;
 import com.example.demo.model.OrderItem;
+import com.example.demo.model.User;
+import com.example.demo.repositories.UserRepository;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 
-// We still recommend using the UserReferenceMapper you created in the previous step
-@Mapper(componentModel = "spring", uses = { UserReferenceMapper.class })
-public interface OrderMapper {
+@Mapper(componentModel = "spring")
+public abstract class OrderMapper {
 
-    // THIS IS THE FIX: Use a Java expression for the mapping to avoid ambiguity.
+    @Autowired
+    private UserRepository userRepository;
+
+    public User map(Long value) {
+        if (value == null) {
+            return null;
+        }
+        return userRepository.getReferenceById(value);
+    }
+
     @Mapping(target = "userId", expression = "java(order.getUser() != null ? order.getUser().getId() : null)")
     @Mapping(target = "orderItems", source = "items")
-    OrderDTO toDTO(Order order);
+    public abstract OrderDTO toDTO(Order order);
 
-    // This mapping relies on the UserReferenceMapper and should be correct.
     @Mapping(target = "user", source = "userId")
     @Mapping(target = "items", source = "orderItems")
-    Order toEntity(OrderDTO orderDTO);
+    public abstract Order toEntity(OrderDTO orderDTO);
 
-    List<OrderDTO> toDTOs(List<Order> orders);
+    public abstract List<OrderDTO> toDTOs(List<Order> orders);
 
-    List<Order> toEntities(List<OrderDTO> orderDTOS);
+    public abstract List<Order> toEntities(List<OrderDTO> orderDTOS);
 
     @Mapping(target = "productId", source = "product.id")
-    OrderItemDTO toOrderItemDTO(OrderItem orderItem);
+    public abstract OrderItemDTO toOrderItemDTO(OrderItem orderItem);
 
     @Mapping(target = "product.id", source = "productId")
-    OrderItem toOrderItemEntity(OrderItemDTO orderItemDTO);
+    @Mapping(target = "order", ignore = true)
+    public abstract OrderItem toOrderItemEntity(OrderItemDTO orderItemDTO);
 
-    List<OrderItemDTO> toOrderItemDTOs(List<OrderItem> orderItem);
+    public abstract List<OrderItemDTO> toOrderItemDTOs(List<OrderItem> orderItems);
 
-    List<OrderItem> toOrderItemEntities(List<OrderItemDTO> orderItemDTO);
+    public abstract List<OrderItem> toOrderItemEntities(List<OrderItemDTO> orderItemDTOs);
 }
