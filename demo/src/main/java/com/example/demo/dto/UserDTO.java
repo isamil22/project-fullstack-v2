@@ -7,6 +7,7 @@ import lombok.Data;
 public class UserDTO {
     private Long id;
     private String email;
+    private String fullName; // ADDED
     private User.Role role;
     private boolean emailConfirmation;
 }

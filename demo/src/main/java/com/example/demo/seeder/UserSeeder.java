@@ -10,7 +10,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
 @Component
-@Order(2) // Ensures this runs after the CategorySeeder
+@Order(2)
 public class UserSeeder implements CommandLineRunner {
 
     @Autowired
@@ -23,6 +23,7 @@ public class UserSeeder implements CommandLineRunner {
     public void run(String... args) throws Exception {
         if (userRepository.count() == 0) {
             User admin = new User();
+            admin.setFullName("Admin User"); // ADDED
             admin.setEmail("admin@example.com");
             admin.setPassword(passwordEncoder.encode("adminpassword"));
             admin.setRole(Role.ADMIN);
@@ -31,6 +32,7 @@ public class UserSeeder implements CommandLineRunner {
             userRepository.save(admin);
 
             User user = new User();
+            user.setFullName("User Demo"); // ADDED
             user.setEmail("user@example.com");
             user.setPassword(passwordEncoder.encode("userpassword"));
             user.setRole(Role.USER);

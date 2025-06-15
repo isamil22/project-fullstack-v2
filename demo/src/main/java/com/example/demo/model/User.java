@@ -1,3 +1,4 @@
+
 package com.example.demo.model;
 
 import jakarta.persistence.*;
@@ -22,11 +23,15 @@ public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @NotBlank(message = "Full name is required") // Added validation
+    private String fullName;
+
     @NotBlank
     @Email
     private String email;
-    @NotBlank
 
+    @NotBlank
     private String password;
 
     @Enumerated(EnumType.STRING)

@@ -4,7 +4,8 @@ import { loginUser, registerUser, getUserProfile } from '../api/apiService';
 
 const AuthPage = ({ setIsAuthenticated }) => {
     const [isLogin, setIsLogin] = useState(true);
-    const [formData, setFormData] = useState({ email: '', password: '' });
+    // Add fullName to state
+    const [formData, setFormData] = useState({ fullName: '', email: '', password: '' });
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const navigate = useNavigate();
@@ -22,26 +23,23 @@ const AuthPage = ({ setIsAuthenticated }) => {
 
         try {
             if (isLogin) {
-                // Step 1: Log in and get the token
-                const response = await loginUser(formData);
+                const loginData = { email: formData.email, password: formData.password };
+                const response = await loginUser(loginData);
                 localStorage.setItem('token', response.data);
 
-                // This will trigger the useEffect in App.jsx to fetch the role and update state
                 setIsAuthenticated(true);
                 setSuccess('Login successful! Redirecting...');
 
-                // Step 2: Fetch profile to determine where to redirect
                 const profileResponse = await getUserProfile();
                 const userRole = profileResponse.data.role;
 
-                // Step 3: Redirect based on the role
                 if (userRole === 'ADMIN') {
                     navigate('/admin/dashboard');
                 } else {
                     navigate('/');
                 }
             } else {
-                // Handle registration
+                // Pass the full form data for registration
                 await registerUser(formData);
                 setSuccess('Registration successful! You can now log in.');
                 setIsLogin(true);
@@ -49,16 +47,15 @@ const AuthPage = ({ setIsAuthenticated }) => {
         } catch (err) {
             const errorMessage = err.response?.data?.message || err.response?.data || 'An error occurred. Please try again.';
             setError(errorMessage);
-            setIsAuthenticated(false); // Ensure auth state is false on error
+            setIsAuthenticated(false);
         }
     };
 
-    // ... toggleForm and return statement are unchanged
     const toggleForm = () => {
         setIsLogin(!isLogin);
         setError('');
         setSuccess('');
-        setFormData({ email: '', password: '' });
+        setFormData({ fullName: '', email: '', password: '' }); // Reset form
     };
 
     return (
@@ -70,7 +67,24 @@ const AuthPage = ({ setIsAuthenticated }) => {
                     </h2>
                 </div>
                 <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-                    <div className="rounded-md shadow-sm -space-y-px">
+                    <div className="rounded-md shadow-sm">
+                        {/* Full Name Input - shows only on registration */}
+                        {!isLogin && (
+                            <div className="mb-2">
+                                <label htmlFor="full-name" className="sr-only">Full name</label>
+                                <input
+                                    id="full-name"
+                                    name="fullName"
+                                    type="text"
+                                    autoComplete="name"
+                                    required
+                                    className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-pink-500 focus:border-pink-500 sm:text-sm"
+                                    placeholder="Full name"
+                                    value={formData.fullName}
+                                    onChange={handleChange}
+                                />
+                            </div>
+                        )}
                         <div>
                             <label htmlFor="email-address" className="sr-only">Email address</label>
                             <input
@@ -79,7 +93,7 @@ const AuthPage = ({ setIsAuthenticated }) => {
                                 type="email"
                                 autoComplete="email"
                                 required
-                                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-pink-500 focus:border-pink-500 sm:text-sm"
+                                className={`appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 ${isLogin ? 'rounded-t-md' : ''} focus:outline-none focus:ring-pink-500 focus:border-pink-500 sm:text-sm`}
                                 placeholder="Email address"
                                 value={formData.email}
                                 onChange={handleChange}
@@ -93,7 +107,7 @@ const AuthPage = ({ setIsAuthenticated }) => {
                                 type="password"
                                 autoComplete="current-password"
                                 required
-                                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-pink-500 focus:border-pink-500 sm:text-sm"
+                                className="appearance-none rounded-b-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-pink-500 focus:border-pink-500 sm:text-sm"
                                 placeholder="Password"
                                 value={formData.password}
                                 onChange={handleChange}

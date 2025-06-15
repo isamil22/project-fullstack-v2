@@ -3,7 +3,6 @@ package com.example.demo.dto;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Positive;
 import lombok.Data;
 
 @Data
@@ -15,5 +14,5 @@ public class CommentDTO {
     @Max(value=5)
     private Integer score;
     private Long userId;
+    private String userFullName; // CHANGED from userEmail
 }
-
