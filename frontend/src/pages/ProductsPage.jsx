@@ -1,34 +1,34 @@
-// isamil22/project-fullstack/project-fullstack-6ef389f74415f1de0f4819cf9cb835c233eaddb4/frontend/src/pages/ProductsPage.jsx
 import React, { useState, useEffect } from 'react';
-import { getAllProducts, getAllCategories } from '../api/apiService'; // Import getAllCategories
+import { useSearchParams } from 'react-router-dom'; // Import useSearchParams
+import { getAllProducts, getAllCategories } from '../api/apiService';
 import ProductCard from '../components/ProductCard';
 
 const ProductsPage = () => {
     const [products, setProducts] = useState([]);
-    const [categories, setCategories] = useState([]); // State for categories
+    const [categories, setCategories] = useState([]);
     const [error, setError] = useState(null);
+    const [searchParams] = useSearchParams(); // Get URL search params
+
+    // Initialize filters directly from URL search params
     const [filters, setFilters] = useState({
-        search: '',
-        maxPrice: '',
-        brand: '',
-        specialFilter: '', // This will handle 'bestseller' and 'newArrival'
-        categoryId: '' // Add categoryId to filters
+        search: searchParams.get('search') || '',
+        maxPrice: searchParams.get('maxPrice') || '',
+        brand: searchParams.get('brand') || '',
+        specialFilter: searchParams.get('specialFilter') || '',
+        categoryId: searchParams.get('categoryId') || ''
     });
 
     useEffect(() => {
-        // Fetch categories for the dropdown
         const fetchCategories = async () => {
             try {
                 const response = await getAllCategories();
                 setCategories(response.data);
             } catch (err) {
                 console.error("Error fetching categories:", err);
-                // Not setting a page-level error for this, as the page can still function
             }
         };
-
         fetchCategories();
-    }, []); // Fetch categories only once
+    }, []);
 
     useEffect(() => {
         const fetchProducts = async () => {
@@ -37,10 +37,9 @@ const ProductsPage = () => {
                     search: filters.search,
                     maxPrice: filters.maxPrice,
                     brand: filters.brand,
-                    categoryId: filters.categoryId // Pass categoryId to params
+                    categoryId: filters.categoryId
                 };
 
-                // Add bestseller or newArrival to params based on the specialFilter value
                 if (filters.specialFilter === 'bestseller') {
                     params.bestseller = true;
                 } else if (filters.specialFilter === 'newArrival') {
@@ -48,9 +47,7 @@ const ProductsPage = () => {
                 }
 
                 const response = await getAllProducts(params);
-                const productsArray = Array.isArray(response.data)
-                    ? response.data
-                    : response.data.content;
+                const productsArray = Array.isArray(response.data) ? response.data : response.data.content;
 
                 if (Array.isArray(productsArray)) {
                     setProducts(productsArray);
@@ -83,7 +80,6 @@ const ProductsPage = () => {
         <div className="container mx-auto px-4 py-8">
             <h1 className="text-3xl font-bold text-center text-gray-800 mb-8">All Products</h1>
 
-            {/* Filter and Search Section */}
             <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8 p-4 bg-white rounded-lg shadow">
                 <input
                     type="text"
@@ -109,7 +105,6 @@ const ProductsPage = () => {
                     onChange={handleFilterChange}
                     className="p-2 border rounded"
                 />
-                {/* Category Dropdown */}
                 <select
                     name="categoryId"
                     value={filters.categoryId}

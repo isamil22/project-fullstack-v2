@@ -132,34 +132,44 @@ const ProductDetailPage = () => {
                 </div>
             </div>
 
-            {/* Description and Comments Section */}
-            <div className="mt-16">
-                <div className="border-b border-gray-200">
-                    <h2 className="text-2xl font-bold text-gray-800 py-4">Product Description</h2>
+            {/* Description and Comments Section - HORIZONTAL LAYOUT */}
+            <div className="mt-16 grid grid-cols-1 md:grid-cols-2 gap-12">
+                {/* Column 1: Description */}
+                <div>
+                    <div className="border-b border-gray-200 mb-4">
+                        <h2 className="text-2xl font-bold text-gray-800 py-4">Product Description</h2>
+                    </div>
+                    <div
+                        className="prose max-w-none"
+                        dangerouslySetInnerHTML={{ __html: product.description }}
+                    />
                 </div>
-                <div
-                    className="prose mt-4"
-                    dangerouslySetInnerHTML={{ __html: product.description }}
-                />
-            </div>
 
-            <div className="mt-12">
-                <div className="border-b border-gray-200">
-                    <h2 className="text-2xl font-bold text-gray-800 py-4">Customer Comments</h2>
-                </div>
-                <div className="space-y-6 mt-4">
-                    {product.comments && product.comments.length > 0 ? (
-                        product.comments.map(comment => (
-                            <div key={comment.id} className="bg-gray-50 p-4 rounded-lg">
-                                <p className="text-gray-700">{comment.content}</p>
-                                <p className="text-sm text-gray-500 mt-2">
-                                    - User ID: {comment.userId}, Score: {comment.score}/5
-                                </p>
-                            </div>
-                        ))
-                    ) : (
-                        <p className="text-gray-500">No comments yet.</p>
-                    )}
+                {/* Column 2: Comments */}
+                <div>
+                    <div className="border-b border-gray-200 mb-4">
+                        <h2 className="text-2xl font-bold text-gray-800 py-4">Customer Comments</h2>
+                    </div>
+                    <div className="space-y-6">
+                        {product.comments && product.comments.length > 0 ? (
+                            product.comments.map(comment => (
+                                <div key={comment.id} className="bg-gray-50 p-4 rounded-lg">
+                                    <p className="text-gray-700 italic">"{comment.content}"</p>
+                                    <div className="flex justify-between items-center mt-2">
+                                        <div className="text-yellow-500" aria-label={`Rating: ${comment.score} out of 5 stars`}>
+                                            {'★'.repeat(comment.score)}
+                                            {'☆'.repeat(5 - comment.score)}
+                                        </div>
+                                        <p className="text-sm text-gray-600">
+                                            - <span className="font-semibold">{comment.userFullName}</span>
+                                        </p>
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <p className="text-gray-500">No comments yet.</p>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>

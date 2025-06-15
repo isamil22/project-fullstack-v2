@@ -19,25 +19,26 @@ import AdminUsersPage from './pages/admin/AdminUsersPage.jsx';
 import AdminReviewsPage from './pages/admin/AdminReviewsPage.jsx';
 import { getUserProfile } from './api/apiService.js';
 
+// --- ADD THESE IMPORTS FOR THE NEW PAGES ---
+import ContactPage from './pages/ContactPage.jsx';
+import FaqPage from './pages/FaqPage.jsx';
+import ShippingPage from './pages/ShippingPage.jsx';
+
 function App() {
-    // State to manage if the user is currently logged in
+    // ... (your existing state and logic here)
     const [isAuthenticated, setIsAuthenticated] = useState(false);
-    // State to store the role of the logged-in user (e.g., 'USER' or 'ADMIN')
     const [userRole, setUserRole] = useState(null);
 
     useEffect(() => {
-        // This function checks for a token in local storage to determine auth state
         const checkAuthAndFetchRole = async () => {
             const token = localStorage.getItem('token');
             if (token) {
                 setIsAuthenticated(true);
                 try {
-                    // If a token exists, fetch the user's profile to get their role
                     const response = await getUserProfile();
-                    setUserRole(response.data.role); // Set the user's role
+                    setUserRole(response.data.role);
                 } catch (error) {
                     console.error("Could not fetch user profile", error);
-                    // If the token is invalid or expired, clear the auth state
                     setIsAuthenticated(false);
                     setUserRole(null);
                     localStorage.removeItem('token');
@@ -45,12 +46,10 @@ function App() {
             }
         };
         checkAuthAndFetchRole();
-    }, [isAuthenticated]); // This effect re-runs whenever the isAuthenticated state changes
+    }, [isAuthenticated]);
 
-    // This handler is passed down to components like the login page to update the app's auth state
     const handleSetIsAuthenticated = (authStatus) => {
         setIsAuthenticated(authStatus);
-        // If the user is logging out, also clear their role
         if (!authStatus) {
             setUserRole(null);
         }
@@ -59,7 +58,6 @@ function App() {
     return (
         <BrowserRouter>
             <div className="flex flex-col min-h-screen">
-                {/* Navbar is displayed on all pages and receives auth state and role */}
                 <Navbar isAuthenticated={isAuthenticated} setIsAuthenticated={handleSetIsAuthenticated} userRole={userRole} />
                 <main className="flex-grow">
                     <Routes>
@@ -73,13 +71,17 @@ function App() {
                             element={<AuthPage setIsAuthenticated={handleSetIsAuthenticated} />}
                         />
 
+                        {/* --- ADD THE ROUTES FOR YOUR NEW PAGES HERE --- */}
+                        <Route path="/contact" element={<ContactPage />} />
+                        <Route path="/faq" element={<FaqPage />} />
+                        <Route path="/shipping" element={<ShippingPage />} />
+
                         {/* --- Authenticated User Routes --- */}
                         <Route path="/profile" element={<ProfilePage />} />
                         <Route path="/cart" element={<CartPage />} />
                         <Route path="/order" element={<OrderPage />} />
 
                         {/* --- Admin-Only Routes --- */}
-                        {/* The AdminLayout provides the sidebar for all nested admin pages */}
                         <Route path="/admin" element={<AdminLayout />}>
                             <Route path="dashboard" element={<AdminDashboard />} />
                             <Route path="products" element={<AdminProductsPage />} />
@@ -91,7 +93,6 @@ function App() {
                         </Route>
                     </Routes>
                 </main>
-                {/* Footer is displayed on all pages */}
                 <Footer />
             </div>
         </BrowserRouter>
