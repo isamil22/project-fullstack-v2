@@ -12,6 +12,9 @@ const AdminSidebar = () => {
                 <NavLink to="/admin/dashboard" className={({ isActive }) => `block py-2.5 px-4 rounded transition duration-200 ${isActive ? activeLinkClass : inactiveLinkClass}`}>
                     Dashboard
                 </NavLink>
+                <NavLink to="/admin/hero" className={({ isActive }) => `block py-2.5 px-4 rounded transition duration-200 ${isActive ? activeLinkClass : inactiveLinkClass}`}>
+                    Hero Section
+                </NavLink>
                 <NavLink to="/admin/products" className={({ isActive }) => `block py-2.5 px-4 rounded transition duration-200 ${isActive ? activeLinkClass : inactiveLinkClass}`}>
                     Products
                 </NavLink>

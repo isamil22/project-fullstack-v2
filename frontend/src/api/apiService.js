@@ -169,3 +169,14 @@ export const uploadDescriptionImage = (imageData) => {
         },
     });
 };
+
+// --- Hero Section API Functions ---
+export const getHero = () => {
+    return apiService.get('/hero');
+};
+
+export const updateHero = (formData) => {
+    return apiService.put('/hero', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+    });
+};

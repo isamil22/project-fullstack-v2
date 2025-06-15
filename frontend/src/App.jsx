@@ -19,18 +19,15 @@ import AdminUsersPage from './pages/admin/AdminUsersPage.jsx';
 import AdminReviewsPage from './pages/admin/AdminReviewsPage.jsx';
 import { getUserProfile } from './api/apiService.js';
 
-// --- ADD THESE IMPORTS FOR THE NEW PAGES ---
 import ContactPage from './pages/ContactPage.jsx';
 import FaqPage from './pages/FaqPage.jsx';
 import ShippingPage from './pages/ShippingPage.jsx';
 
-// --- IMPORTS FOR CATEGORY MANAGEMENT ---
 import AdminCategoriesPage from './pages/admin/AdminCategoriesPage.jsx';
 import AdminCategoryForm from './pages/admin/AdminCategoryForm.jsx';
-
+import AdminHeroPage from './pages/admin/AdminHeroPage.jsx';
 
 function App() {
-    // ... (your existing state and logic here)
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [userRole, setUserRole] = useState(null);
 
@@ -75,8 +72,6 @@ function App() {
                             path="/auth"
                             element={<AuthPage setIsAuthenticated={handleSetIsAuthenticated} />}
                         />
-
-                        {/* --- ADD THE ROUTES FOR YOUR NEW PAGES HERE --- */}
                         <Route path="/contact" element={<ContactPage />} />
                         <Route path="/faq" element={<FaqPage />} />
                         <Route path="/shipping" element={<ShippingPage />} />
@@ -89,13 +84,13 @@ function App() {
                         {/* --- Admin-Only Routes --- */}
                         <Route path="/admin" element={<AdminLayout />}>
                             <Route path="dashboard" element={<AdminDashboard />} />
+                            <Route path="hero" element={<AdminHeroPage />} />
                             <Route path="products" element={<AdminProductsPage />} />
                             <Route path="products/new" element={<AdminProductForm />} />
                             <Route path="products/edit/:id" element={<AdminProductForm />} />
                             <Route path="orders" element={<AdminOrdersPage />} />
                             <Route path="users" element={<AdminUsersPage />} />
                             <Route path="reviews" element={<AdminReviewsPage />} />
-                            {/* --- CATEGORY ROUTES --- */}
                             <Route path="categories" element={<AdminCategoriesPage />} />
                             <Route path="categories/new" element={<AdminCategoryForm />} />
                             <Route path="categories/edit/:id" element={<AdminCategoryForm />} />
