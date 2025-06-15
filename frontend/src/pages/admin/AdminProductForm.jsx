@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getProductById, createProduct, updateProduct, getAllCategories } from '../../api/apiService.js';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 
 const AdminProductForm = () => {
     const { id } = useParams();
@@ -16,7 +18,7 @@ const AdminProductForm = () => {
         newArrival: false
     });
     const [categories, setCategories] = useState([]);
-    const [images, setImages] = useState([]); // FIX: Changed to handle multiple images
+    const [images, setImages] = useState([]);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
 
@@ -54,8 +56,12 @@ const AdminProductForm = () => {
         setProduct(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
     };
 
+    const handleDescriptionChange = (value) => {
+        setProduct(prev => ({ ...prev, description: value }));
+    };
+
     const handleImageChange = (e) => {
-        setImages([...e.target.files]); // FIX: Store all selected files
+        setImages([...e.target.files]);
     };
 
     const handleSubmit = async (e) => {
@@ -63,7 +69,6 @@ const AdminProductForm = () => {
         const formData = new FormData();
         formData.append('product', new Blob([JSON.stringify(product)], { type: 'application/json' }));
 
-        // FIX: Append all selected image files with the correct key 'images'
         if (images.length > 0) {
             images.forEach(imageFile => {
                 formData.append('images', imageFile);
@@ -90,16 +95,21 @@ const AdminProductForm = () => {
     return (
         <div className="container mx-auto px-4 py-8">
             <h1 className="text-3xl font-bold mb-6">{id ? 'Edit Product' : 'Create Product'}</h1>
-            <form onSubmit={handleSubmit} className="space-y-6 max-w-lg mx-auto bg-white p-8 rounded-lg shadow-md">
+            <form onSubmit={handleSubmit} className="space-y-6 max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-md">
                 {error && <p className="text-red-500">{error}</p>}
                 {success && <p className="text-green-500">{success}</p>}
                 <div>
                     <label htmlFor="name" className="block text-sm font-medium text-gray-700">Name</label>
                     <input type="text" name="name" id="name" value={product.name} onChange={handleChange} required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500" />
                 </div>
-                <div>
+                <div className="mb-4">
                     <label htmlFor="description" className="block text-sm font-medium text-gray-700">Description</label>
-                    <textarea name="description" id="description" value={product.description} onChange={handleChange} required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500"></textarea>
+                    <ReactQuill
+                        theme="snow"
+                        value={product.description}
+                        onChange={handleDescriptionChange}
+                        className="mt-1 bg-white"
+                    />
                 </div>
                 <div>
                     <label htmlFor="price" className="block text-sm font-medium text-gray-700">Price</label>
@@ -124,7 +134,6 @@ const AdminProductForm = () => {
                 </div>
                 <div>
                     <label htmlFor="image" className="block text-sm font-medium text-gray-700">Product Image</label>
-                    {/* FIX: Add 'multiple' attribute to allow selecting multiple files */}
                     <input type="file" name="image" id="image" onChange={handleImageChange} multiple className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-pink-50 file:text-pink-700 hover:file:bg-pink-100" />
                 </div>
                 <div className="flex space-x-4">

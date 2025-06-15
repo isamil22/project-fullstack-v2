@@ -15,7 +15,6 @@ const ProductDetailPage = () => {
         getProductById(id)
             .then(response => {
                 setProduct(response.data);
-                // FIX: Set the main image from the product's 'images' list on load
                 if (response.data.images && response.data.images.length > 0) {
                     setSelectedImage(`http://localhost:8080${response.data.images[0]}`);
                 }
@@ -54,7 +53,6 @@ const ProductDetailPage = () => {
         return <p className="text-center mt-10">Loading product details...</p>;
     }
 
-    // FIX: Construct the image list from the 'images' property of the product object
     const imageList = product.images && product.images.length > 0
         ? product.images.map(img => `http://localhost:8080${img}`)
         : ['https://placehold.co/600x400/E91E63/FFFFFF?text=Product'];
@@ -139,7 +137,10 @@ const ProductDetailPage = () => {
                 <div className="border-b border-gray-200">
                     <h2 className="text-2xl font-bold text-gray-800 py-4">Product Description</h2>
                 </div>
-                <p className="text-gray-600 mt-4">{product.description}</p>
+                <div
+                    className="prose mt-4"
+                    dangerouslySetInnerHTML={{ __html: product.description }}
+                />
             </div>
 
             <div className="mt-12">
