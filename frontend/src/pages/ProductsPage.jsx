@@ -1,3 +1,4 @@
+// isamil22/project-fullstack/project-fullstack-6ef389f74415f1de0f4819cf9cb835c233eaddb4/frontend/src/pages/ProductsPage.jsx
 import React, { useState, useEffect } from 'react';
 import { getAllProducts } from '../api/apiService';
 import ProductCard from '../components/ProductCard';
@@ -7,21 +8,25 @@ const ProductsPage = () => {
     const [error, setError] = useState(null);
     const [filters, setFilters] = useState({
         search: '',
-        minPrice: '',
         maxPrice: '',
-        brand: ''
+        brand: '',
+        specialFilter: '' // This will handle 'bestseller' and 'newArrival'
     });
 
-    // Fetch products whenever the filters change
     useEffect(() => {
         const fetchProducts = async () => {
             try {
-                // Create a clean params object, excluding any empty filter values
-                const params = {};
-                for (const key in filters) {
-                    if (filters[key]) {
-                        params[key] = filters[key];
-                    }
+                const params = {
+                    search: filters.search,
+                    maxPrice: filters.maxPrice,
+                    brand: filters.brand,
+                };
+
+                // Add bestseller or newArrival to params based on the specialFilter value
+                if (filters.specialFilter === 'bestseller') {
+                    params.bestseller = true;
+                } else if (filters.specialFilter === 'newArrival') {
+                    params.newArrival = true;
                 }
 
                 const response = await getAllProducts(params);
@@ -41,15 +46,13 @@ const ProductsPage = () => {
             }
         };
 
-        // Debounce fetching to avoid too many API calls while typing
         const timerId = setTimeout(() => {
             fetchProducts();
-        }, 500); // Wait for 500ms after user stops typing
+        }, 500);
 
-        return () => clearTimeout(timerId); // Cleanup timeout on component unmount or filter change
+        return () => clearTimeout(timerId);
     }, [filters]);
 
-    // Handler to update the filter state
     const handleFilterChange = (e) => {
         const { name, value } = e.target;
         setFilters(prevFilters => ({
@@ -67,16 +70,8 @@ const ProductsPage = () => {
                 <input
                     type="text"
                     name="search"
-                    placeholder="Search by name or description..."
+                    placeholder="Search by name..."
                     value={filters.search}
-                    onChange={handleFilterChange}
-                    className="p-2 border rounded"
-                />
-                <input
-                    type="number"
-                    name="minPrice"
-                    placeholder="Min Price"
-                    value={filters.minPrice}
                     onChange={handleFilterChange}
                     className="p-2 border rounded"
                 />
@@ -96,6 +91,16 @@ const ProductsPage = () => {
                     onChange={handleFilterChange}
                     className="p-2 border rounded"
                 />
+                <select
+                    name="specialFilter"
+                    value={filters.specialFilter}
+                    onChange={handleFilterChange}
+                    className="p-2 border rounded"
+                >
+                    <option value="">All Products</option>
+                    <option value="bestseller">Bestsellers</option>
+                    <option value="newArrival">New Arrivals</option>
+                </select>
             </div>
 
             {error && <p className="text-center text-red-500">{error}</p>}

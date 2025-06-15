@@ -23,6 +23,7 @@ import java.math.BigDecimal;
 public class ProductController {
     private final ProductService productService;
 
+    // ... (other methods remain the same)
     @GetMapping("/bestsellers")
     public ResponseEntity<Page<ProductListDTO>> getBestsellers(
             @PageableDefault(size = 4) Pageable pageable) {
@@ -72,13 +73,16 @@ public class ProductController {
         return ResponseEntity.ok(productService.getProduct(id));
     }
 
+
     @GetMapping
     public ResponseEntity<Page<ProductListDTO>> getAllProducts(
             @RequestParam(required = false) String search,
             @RequestParam(required = false) BigDecimal minPrice,
             @RequestParam(required = false) BigDecimal maxPrice,
             @RequestParam(required = false) String brand,
+            @RequestParam(required = false) Boolean bestseller,
+            @RequestParam(required = false) Boolean newArrival,
             @PageableDefault(size = 12, sort = "name") Pageable pageable) {
-        return ResponseEntity.ok(productService.getAllProducts(search, minPrice, maxPrice, brand, pageable));
+        return ResponseEntity.ok(productService.getAllProducts(search, minPrice, maxPrice, brand, bestseller, newArrival, pageable));
     }
 }
