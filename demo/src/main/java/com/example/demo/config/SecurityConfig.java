@@ -20,6 +20,14 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+// Add these imports
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import java.util.List;
+
+import static org.springframework.security.config.Customizer.withDefaults;
+
 
 @Configuration
 @EnableWebSecurity
@@ -33,6 +41,8 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
+                // Add this line to integrate CORS configuration
+                .cors(withDefaults())
                 .authorizeHttpRequests(auth-> auth
                         .requestMatchers("/").permitAll()
                         .requestMatchers("/images/**").permitAll()
@@ -40,13 +50,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
                         .requestMatchers("/api/auth/change-password").authenticated()
-                        .requestMatchers(HttpMethod.GET, "/api/**").permitAll()     // Allow all GET requests to /api/**
-                        .requestMatchers("/images/**").permitAll()  // Permit access to all images
-                        .requestMatchers(HttpMethod.GET, "/api/reviews/approved").permitAll() // <-- ADD THIS LINE
-
-
-
-
+                        .requestMatchers(HttpMethod.GET, "/api/**").permitAll()
+                        .requestMatchers("/images/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/reviews/approved").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
@@ -56,6 +62,21 @@ public class SecurityConfig {
 
         return http.build();
     }
+
+    // Add this new Bean to configure CORS
+    @Bean
+    CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        // This is the origin of your React app
+        configuration.setAllowedOrigins(List.of("http://localhost:5173"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        configuration.setAllowCredentials(true);
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
+
 
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter(){
