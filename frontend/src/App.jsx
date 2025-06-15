@@ -24,6 +24,11 @@ import ContactPage from './pages/ContactPage.jsx';
 import FaqPage from './pages/FaqPage.jsx';
 import ShippingPage from './pages/ShippingPage.jsx';
 
+// --- IMPORTS FOR CATEGORY MANAGEMENT ---
+import AdminCategoriesPage from './pages/admin/AdminCategoriesPage.jsx';
+import AdminCategoryForm from './pages/admin/AdminCategoryForm.jsx';
+
+
 function App() {
     // ... (your existing state and logic here)
     const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -90,6 +95,10 @@ function App() {
                             <Route path="orders" element={<AdminOrdersPage />} />
                             <Route path="users" element={<AdminUsersPage />} />
                             <Route path="reviews" element={<AdminReviewsPage />} />
+                            {/* --- CATEGORY ROUTES --- */}
+                            <Route path="categories" element={<AdminCategoriesPage />} />
+                            <Route path="categories/new" element={<AdminCategoryForm />} />
+                            <Route path="categories/edit/:id" element={<AdminCategoryForm />} />
                         </Route>
                     </Routes>
                 </main>

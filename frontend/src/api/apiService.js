@@ -96,9 +96,27 @@ export const deleteProduct = (id) => {
     return apiService.delete(`/products/${id}`);
 };
 
+// --- CATEGORY API FUNCTIONS ---
 export const getAllCategories = () => {
     return apiService.get('/categories');
 };
+
+export const createCategory = (formData) => {
+    return apiService.post('/categories', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+    });
+};
+
+export const updateCategory = (id, formData) => {
+    return apiService.put(`/categories/${id}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+    });
+};
+
+export const deleteCategory = (id) => {
+    return apiService.delete(`/categories/${id}`);
+};
+
 
 export const getAllOrders = () => {
     return apiService.get('/orders');

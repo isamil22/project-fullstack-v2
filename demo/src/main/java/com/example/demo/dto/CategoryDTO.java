@@ -18,4 +18,6 @@ public class CategoryDTO {
 
     @Size(max = 500, message = "Description can be up to 500 characters")
     private String description;
+
+    private String imageUrl; // Add imageUrl field
 }

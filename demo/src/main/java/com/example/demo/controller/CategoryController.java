@@ -5,10 +5,13 @@ import com.example.demo.service.CategoryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -17,10 +20,12 @@ import java.util.List;
 public class CategoryController {
     private final CategoryService categoryService;
 
-    @PostMapping
+    // Modified to handle multipart/form-data
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<CategoryDTO> createCategory(@Valid @RequestBody CategoryDTO categoryDTO) {
-        CategoryDTO createdCategory = categoryService.createCategory(categoryDTO);
+    public ResponseEntity<CategoryDTO> createCategory(@RequestPart("category") @Valid CategoryDTO categoryDTO,
+                                                      @RequestPart(value = "image", required = false) MultipartFile image) throws IOException {
+        CategoryDTO createdCategory = categoryService.createCategory(categoryDTO, image);
         return new ResponseEntity<>(createdCategory, HttpStatus.CREATED);
     }
 
@@ -34,10 +39,13 @@ public class CategoryController {
         return ResponseEntity.ok(categoryService.getCategoryById(id));
     }
 
-    @PutMapping("/{id}")
+    // Modified to handle multipart/form-data
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<CategoryDTO> updateCategory(@PathVariable Long id, @Valid @RequestBody CategoryDTO categoryDTO) {
-        return ResponseEntity.ok(categoryService.updateCategory(id, categoryDTO));
+    public ResponseEntity<CategoryDTO> updateCategory(@PathVariable Long id,
+                                                      @RequestPart("category") @Valid CategoryDTO categoryDTO,
+                                                      @RequestPart(value = "image", required = false) MultipartFile image) throws IOException {
+        return ResponseEntity.ok(categoryService.updateCategory(id, categoryDTO, image));
     }
 
     @DeleteMapping("/{id}")

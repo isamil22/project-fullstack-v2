@@ -21,4 +21,7 @@ public class Category {
 
     @Column(length = 500) // A short description for the category
     private String description;
+
+    @Column(length = 2048) // Add a field for the image URL
+    private String imageUrl;
 }

@@ -15,13 +15,15 @@ const AdminSidebar = () => {
                 <NavLink to="/admin/products" className={({ isActive }) => `block py-2.5 px-4 rounded transition duration-200 ${isActive ? activeLinkClass : inactiveLinkClass}`}>
                     Products
                 </NavLink>
+                <NavLink to="/admin/categories" className={({ isActive }) => `block py-2.5 px-4 rounded transition duration-200 ${isActive ? activeLinkClass : inactiveLinkClass}`}>
+                    Categories
+                </NavLink>
                 <NavLink to="/admin/orders" className={({ isActive }) => `block py-2.5 px-4 rounded transition duration-200 ${isActive ? activeLinkClass : inactiveLinkClass}`}>
                     Orders
                 </NavLink>
                 <NavLink to="/admin/users" className={({ isActive }) => `block py-2.5 px-4 rounded transition duration-200 ${isActive ? activeLinkClass : inactiveLinkClass}`}>
                     Users
                 </NavLink>
-                {/* This is the new link for managing reviews */}
                 <NavLink to="/admin/reviews" className={({ isActive }) => `block py-2.5 px-4 rounded transition duration-200 ${isActive ? activeLinkClass : inactiveLinkClass}`}>
                     Reviews
                 </NavLink>

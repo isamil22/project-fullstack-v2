@@ -44,7 +44,7 @@ const HomePage = () => {
 
     return (
         <div className="container mx-auto px-4 py-8">
-            {/* --- Hero Section with Background Image --- */}
+            {/* --- Hero Section (no changes) --- */}
             <div
                 className="relative rounded-lg p-12 md:p-20 mb-16 text-center text-white overflow-hidden bg-cover bg-center"
                 style={{ backgroundImage: `url('https://placehold.co/1200x400/E91E63/FFFFFF?text=Beauty+Cosmetics')` }}
@@ -59,7 +59,7 @@ const HomePage = () => {
                 </div>
             </div>
 
-            {/* --- Shop By Category Section with Images --- */}
+            {/* --- ENHANCED Shop By Category Section --- */}
             <div className="mb-16">
                 <h2 className="text-3xl font-bold text-center text-gray-800 mb-8">Shop by Category</h2>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
@@ -69,13 +69,18 @@ const HomePage = () => {
                             to={`/products?categoryId=${category.id}`}
                             className="group relative block bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow overflow-hidden aspect-square"
                         >
+                            {/* Use the new imageUrl, with a fallback to the old placeholder */}
                             <img
-                                src={`https://placehold.co/400x400/fde4f2/E91E63?text=${encodeURIComponent(category.name)}`}
+                                src={category.imageUrl || `https://placehold.co/400x400/fde4f2/E91E63?text=${encodeURIComponent(category.name)}`}
                                 alt={category.name}
                                 className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                             />
-                            <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center p-2">
+                            {/* Enhanced overlay with description on hover */}
+                            <div className="absolute inset-0 bg-black bg-opacity-30 flex flex-col items-center justify-center p-4 transition-all duration-300 group-hover:bg-opacity-60">
                                 <p className="font-semibold text-white text-xl text-center">{category.name}</p>
+                                <p className="text-sm text-center text-gray-200 max-w-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 mt-2 px-2">
+                                    {category.description}
+                                </p>
                             </div>
                         </Link>
                     ))}
@@ -84,6 +89,7 @@ const HomePage = () => {
 
             {error && <p className="text-red-500 text-center">{error}</p>}
 
+            {/* --- Bestsellers Section (no changes) --- */}
             <h2 className="text-3xl font-bold text-center text-pink-500 mb-8">Bestselling Products</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
                 {bestsellers.map(product => (
@@ -91,6 +97,7 @@ const HomePage = () => {
                 ))}
             </div>
 
+            {/* --- New Arrivals Section (no changes) --- */}
             <div className="mt-16">
                 <h2 className="text-3xl font-bold text-center text-pink-500 mb-8">New Arrivals</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
@@ -100,6 +107,7 @@ const HomePage = () => {
                 </div>
             </div>
 
+            {/* --- Reviews Section (no changes) --- */}
             <div className="mt-16">
                 <h2 className="text-3xl font-bold text-center text-gray-800 mb-8">What Our Customers Say</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
