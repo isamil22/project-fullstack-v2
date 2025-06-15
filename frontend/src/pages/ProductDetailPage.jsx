@@ -15,9 +15,9 @@ const ProductDetailPage = () => {
         getProductById(id)
             .then(response => {
                 setProduct(response.data);
-                // Set the main image to the product's default image on load
-                if (response.data.image) {
-                    setSelectedImage(`http://localhost:8080${response.data.image}`);
+                // FIX: Set the main image from the product's 'images' list on load
+                if (response.data.images && response.data.images.length > 0) {
+                    setSelectedImage(`http://localhost:8080${response.data.images[0]}`);
                 }
             })
             .catch(err => {
@@ -54,14 +54,10 @@ const ProductDetailPage = () => {
         return <p className="text-center mt-10">Loading product details...</p>;
     }
 
-    // Placeholder for multiple images.
-    // To implement fully, the backend Product model would need a list of image URLs.
-    const imageList = product.image ? [
-        `http://localhost:8080${product.image}`,
-        'https://placehold.co/600x400/d1d4d9/7d7f82?text=Image+2',
-        'https://placehold.co/600x400/d1d4d9/7d7f82?text=Image+3',
-        'https://placehold.co/600x400/d1d4d9/7d7f82?text=Image+4'
-    ] : ['https://placehold.co/600x400/E91E63/FFFFFF?text=Product'];
+    // FIX: Construct the image list from the 'images' property of the product object
+    const imageList = product.images && product.images.length > 0
+        ? product.images.map(img => `http://localhost:8080${img}`)
+        : ['https://placehold.co/600x400/E91E63/FFFFFF?text=Product'];
 
 
     return (

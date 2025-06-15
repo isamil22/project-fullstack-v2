@@ -16,7 +16,7 @@ const AdminProductForm = () => {
         newArrival: false
     });
     const [categories, setCategories] = useState([]);
-    const [image, setImage] = useState(null);
+    const [images, setImages] = useState([]); // FIX: Changed to handle multiple images
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
 
@@ -36,7 +36,11 @@ const AdminProductForm = () => {
             const fetchProduct = async () => {
                 try {
                     const response = await getProductById(id);
-                    setProduct(response.data);
+                    setProduct({
+                        ...response.data,
+                        bestseller: response.data.bestseller || false,
+                        newArrival: response.data.newArrival || false,
+                    });
                 } catch (err) {
                     setError('Failed to load product data.');
                 }
@@ -51,15 +55,19 @@ const AdminProductForm = () => {
     };
 
     const handleImageChange = (e) => {
-        setImage(e.target.files[0]);
+        setImages([...e.target.files]); // FIX: Store all selected files
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         const formData = new FormData();
         formData.append('product', new Blob([JSON.stringify(product)], { type: 'application/json' }));
-        if (image) {
-            formData.append('image', image);
+
+        // FIX: Append all selected image files with the correct key 'images'
+        if (images.length > 0) {
+            images.forEach(imageFile => {
+                formData.append('images', imageFile);
+            });
         }
 
         setError('');
@@ -116,7 +124,8 @@ const AdminProductForm = () => {
                 </div>
                 <div>
                     <label htmlFor="image" className="block text-sm font-medium text-gray-700">Product Image</label>
-                    <input type="file" name="image" id="image" onChange={handleImageChange} className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-pink-50 file:text-pink-700 hover:file:bg-pink-100" />
+                    {/* FIX: Add 'multiple' attribute to allow selecting multiple files */}
+                    <input type="file" name="image" id="image" onChange={handleImageChange} multiple className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-pink-50 file:text-pink-700 hover:file:bg-pink-100" />
                 </div>
                 <div className="flex space-x-4">
                     <label htmlFor="bestseller" className="flex items-center">
