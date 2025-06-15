@@ -1,10 +1,10 @@
-// frontend/src/pages/HomePage.jsx
+// isamil22/project-fullstack/project-fullstack-fd48dbc27313e0e58ad38b291978319a319d1734/frontend/src/pages/HomePage.jsx
 import React, { useState, useEffect } from 'react';
-import { getAllProducts, getApprovedReviews } from '../api/apiService';
+import { getBestsellers, getApprovedReviews } from '../api/apiService';
 import ProductCard from '../components/ProductCard';
 
 const HomePage = () => {
-    const [products, setProducts] = useState([]);
+    const [bestsellers, setBestsellers] = useState([]);
     const [reviews, setReviews] = useState([]);
     const [error, setError] = useState(null);
 
@@ -12,12 +12,12 @@ const HomePage = () => {
         const fetchData = async () => {
             try {
                 const [productsResponse, reviewsResponse] = await Promise.all([
-                    getAllProducts(),
+                    getBestsellers(),
                     getApprovedReviews()
                 ]);
 
                 const productsArray = Array.isArray(productsResponse.data) ? productsResponse.data : productsResponse.data.content;
-                setProducts(productsArray.slice(0, 4));
+                setBestsellers(productsArray);
                 setReviews(reviewsResponse.data);
 
             } catch (err) {
@@ -30,10 +30,10 @@ const HomePage = () => {
 
     return (
         <div className="container mx-auto px-4 py-8">
-            <h1 className="text-3xl font-bold text-center text-pink-500 mb-8">Featured Products</h1>
+            <h1 className="text-3xl font-bold text-center text-pink-500 mb-8">Bestselling Products</h1>
             {error && <p className="text-red-500 text-center">{error}</p>}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-                {products.map(product => (
+                {bestsellers.map(product => (
                     <ProductCard key={product.id} product={product} />
                 ))}
             </div>

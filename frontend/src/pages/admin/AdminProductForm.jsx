@@ -1,3 +1,4 @@
+// isamil22/project-fullstack/project-fullstack-fd48dbc27313e0e58ad38b291978319a319d1734/frontend/src/pages/admin/AdminProductForm.jsx
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getProductById, createProduct, updateProduct, getAllCategories } from '../../api/apiService.js';
@@ -11,7 +12,8 @@ const AdminProductForm = () => {
         price: '',
         quantity: '',
         brand: '',
-        categoryId: ''
+        categoryId: '',
+        bestseller: false
     });
     const [categories, setCategories] = useState([]);
     const [image, setImage] = useState(null);
@@ -44,8 +46,8 @@ const AdminProductForm = () => {
     }, [id]);
 
     const handleChange = (e) => {
-        const { name, value } = e.target;
-        setProduct(prev => ({ ...prev, [name]: value }));
+        const { name, value, type, checked } = e.target;
+        setProduct(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
     };
 
     const handleImageChange = (e) => {
@@ -115,6 +117,12 @@ const AdminProductForm = () => {
                 <div>
                     <label htmlFor="image" className="block text-sm font-medium text-gray-700">Product Image</label>
                     <input type="file" name="image" id="image" onChange={handleImageChange} className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-pink-50 file:text-pink-700 hover:file:bg-pink-100" />
+                </div>
+                <div>
+                    <label htmlFor="bestseller" className="flex items-center">
+                        <input type="checkbox" name="bestseller" id="bestseller" checked={product.bestseller} onChange={handleChange} className="h-4 w-4 text-pink-600 border-gray-300 rounded focus:ring-pink-500" />
+                        <span className="ml-2 text-sm font-medium text-gray-700">Mark as Bestseller</span>
+                    </label>
                 </div>
                 <div>
                     <button type="submit" className="w-full bg-pink-600 text-white py-2 px-4 rounded-md hover:bg-pink-700">{id ? 'Update' : 'Create'}</button>

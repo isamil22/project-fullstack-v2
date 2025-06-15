@@ -1,3 +1,4 @@
+// isamil22/project-fullstack/project-fullstack-fd48dbc27313e0e58ad38b291978319a319d1734/demo/src/main/java/com/example/demo/model/Product.java
 package com.example.demo.model;
 
 import jakarta.persistence.*;
@@ -23,6 +24,7 @@ public class Product {
     private Integer quantity;
     private String image;
     private String brand; // Added brand
+    private boolean bestseller;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> comments = new ArrayList<>();

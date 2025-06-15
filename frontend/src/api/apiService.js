@@ -1,3 +1,4 @@
+// isamil22/project-fullstack/project-fullstack-fd48dbc27313e0e58ad38b291978319a319d1734/frontend/src/api/apiService.js
 import axios from 'axios';
 
 const apiService = axios.create({
@@ -63,6 +64,11 @@ export const createOrder = (orderData) => {
 // --- New Function for User Orders ---
 export const getUserOrders = () => {
     return apiService.get('/orders/user');
+};
+
+// --- New function for Bestsellers ---
+export const getBestsellers = () => {
+    return apiService.get('/products/bestsellers');
 };
 
 // --- ADMIN FUNCTIONS ---

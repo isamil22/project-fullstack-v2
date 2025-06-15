@@ -1,3 +1,4 @@
+// isamil22/project-fullstack/project-fullstack-fd48dbc27313e0e58ad38b291978319a319d1734/demo/src/main/java/com/example/demo/service/ProductService.java
 package com.example.demo.service;
 
 import com.example.demo.dto.ProductDTO;
@@ -47,6 +48,7 @@ public class ProductService {
         Product product = productMapper.toEntity(productDTO);
         product.setCategory(category);
         product.setBrand(productDTO.getBrand());
+        product.setBestseller(productDTO.isBestseller());
 
 
         if (image != null && !image.isEmpty()) {
@@ -71,6 +73,7 @@ public class ProductService {
         existingProduct.setQuantity(productDTO.getQuantity());
         existingProduct.setCategory(category);
         existingProduct.setBrand(productDTO.getBrand());
+        existingProduct.setBestseller(productDTO.isBestseller());
 
         if (image != null && !image.isEmpty()) {
             String fileName = saveImage(image);
