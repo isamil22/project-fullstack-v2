@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getProductById, createProduct, updateProduct, getAllCategories, uploadDescriptionImage } from '../../api/apiService.js';
 import ReactQuill from 'react-quill';
@@ -23,31 +23,33 @@ const AdminProductForm = () => {
     const [success, setSuccess] = useState('');
     const quillRef = useRef(null);
 
-    const imageHandler = () => {
+    const imageHandler = useCallback(() => {
         const input = document.createElement('input');
         input.setAttribute('type', 'file');
         input.setAttribute('accept', 'image/*');
         input.click();
 
         input.onchange = async () => {
-            const file = input.files[0];
-            if (file) {
+            if (input.files && input.files.length > 0) {
+                const file = input.files[0];
                 const formData = new FormData();
                 formData.append('image', file);
                 try {
                     const response = await uploadDescriptionImage(formData);
                     const imageUrl = `http://localhost:8080${response.data.url}`;
-                    const quill = quillRef.current.getEditor();
-                    const range = quill.getSelection(true);
-                    quill.insertEmbed(range.index, 'image', imageUrl);
+                    const quill = quillRef.current?.getEditor();
+                    if (quill) {
+                        const range = quill.getSelection(true);
+                        quill.insertEmbed(range.index, 'image', imageUrl);
+                    }
                 } catch (error) {
                     setError('Image upload failed: ' + (error.response?.data?.message || 'Server error'));
                 }
             }
         };
-    };
+    }, []);
 
-    const modules = {
+    const modules = useMemo(() => ({
         toolbar: {
             container: [
                 [{ 'header': '1'}, {'header': '2'}, { 'font': [] }],
@@ -62,7 +64,7 @@ const AdminProductForm = () => {
                 image: imageHandler,
             },
         },
-    };
+    }), [imageHandler]);
 
     useEffect(() => {
         const fetchCategories = async () => {
@@ -80,8 +82,10 @@ const AdminProductForm = () => {
             const fetchProduct = async () => {
                 try {
                     const response = await getProductById(id);
+                    const description = response.data.description || '';
                     setProduct({
                         ...response.data,
+                        description: description,
                         bestseller: response.data.bestseller || false,
                         newArrival: response.data.newArrival || false,
                     });
@@ -99,7 +103,10 @@ const AdminProductForm = () => {
     };
 
     const handleDescriptionChange = (value) => {
-        setProduct(prev => ({ ...prev, description: value }));
+        setProduct(prev => ({
+            ...prev,
+            description: value === '<p><br></p>' ? '' : value
+        }));
     };
 
     const handleImageChange = (e) => {
@@ -109,7 +116,12 @@ const AdminProductForm = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         const formData = new FormData();
-        formData.append('product', new Blob([JSON.stringify(product)], { type: 'application/json' }));
+        const productToSend = {
+            ...product,
+            description: product.description || '',
+        };
+
+        formData.append('product', new Blob([JSON.stringify(productToSend)], { type: 'application/json' }));
 
         if (images.length > 0) {
             images.forEach(imageFile => {
@@ -149,7 +161,7 @@ const AdminProductForm = () => {
                     <ReactQuill
                         ref={quillRef}
                         theme="snow"
-                        value={product.description}
+                        value={product.description || ''}
                         onChange={handleDescriptionChange}
                         modules={modules}
                         className="mt-1 bg-white"
