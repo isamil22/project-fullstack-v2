@@ -71,7 +71,7 @@ const HomePage = () => {
                         >
                             {/* Use the new imageUrl, with a fallback to the old placeholder */}
                             <img
-                                src={category.imageUrl || `https://placehold.co/400x400/fde4f2/E91E63?text=${encodeURIComponent(category.name)}`}
+                                src={`http://localhost:8080${category.imageUrl}` || `https://placehold.co/400x400/fde4f2/E91E63?text=${encodeURIComponent(category.name)}`}
                                 alt={category.name}
                                 className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                             />
