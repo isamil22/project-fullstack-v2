@@ -1,4 +1,3 @@
-// isamil22/project-fullstack/project-fullstack-6ef389f74415f1de0f4819cf9cb835c233eaddb4/demo/src/main/java/com/example/demo/service/ProductService.java
 package com.example.demo.service;
 
 import com.example.demo.dto.ProductDTO;
@@ -37,7 +36,6 @@ public class ProductService {
     @Value("${file.upload-dir}")
     private String uploadDir;
 
-    // ... (createProduct, updateProduct, and other methods remain the same)
     @Transactional
     public ProductDTO createProduct(ProductDTO productDTO, MultipartFile image) throws IOException {
         Category category = categoryRepository.findById(productDTO.getCategoryId())
@@ -112,8 +110,8 @@ public class ProductService {
     }
 
 
-    public Page<ProductListDTO> getAllProducts(String search, BigDecimal minPrice, BigDecimal maxPrice, String brand, Boolean bestseller, Boolean newArrival, Pageable pageable) {
-        Specification<Product> spec = productSpecification.getProducts(search, minPrice, maxPrice, brand, bestseller, newArrival);
+    public Page<ProductListDTO> getAllProducts(String search, BigDecimal minPrice, BigDecimal maxPrice, String brand, Boolean bestseller, Boolean newArrival, Long categoryId, Pageable pageable) {
+        Specification<Product> spec = productSpecification.getProducts(search, minPrice, maxPrice, brand, bestseller, newArrival, categoryId);
         return productRepository.findAll(spec, pageable)
                 .map(product -> new ProductListDTO(
                         product.getId(),

@@ -82,7 +82,8 @@ public class ProductController {
             @RequestParam(required = false) String brand,
             @RequestParam(required = false) Boolean bestseller,
             @RequestParam(required = false) Boolean newArrival,
+            @RequestParam(required = false) Long categoryId, // Add this
             @PageableDefault(size = 12, sort = "name") Pageable pageable) {
-        return ResponseEntity.ok(productService.getAllProducts(search, minPrice, maxPrice, brand, bestseller, newArrival, pageable));
+        return ResponseEntity.ok(productService.getAllProducts(search, minPrice, maxPrice, brand, bestseller, newArrival, categoryId, pageable)); // Pass it here
     }
 }

@@ -1,17 +1,34 @@
 // isamil22/project-fullstack/project-fullstack-6ef389f74415f1de0f4819cf9cb835c233eaddb4/frontend/src/pages/ProductsPage.jsx
 import React, { useState, useEffect } from 'react';
-import { getAllProducts } from '../api/apiService';
+import { getAllProducts, getAllCategories } from '../api/apiService'; // Import getAllCategories
 import ProductCard from '../components/ProductCard';
 
 const ProductsPage = () => {
     const [products, setProducts] = useState([]);
+    const [categories, setCategories] = useState([]); // State for categories
     const [error, setError] = useState(null);
     const [filters, setFilters] = useState({
         search: '',
         maxPrice: '',
         brand: '',
-        specialFilter: '' // This will handle 'bestseller' and 'newArrival'
+        specialFilter: '', // This will handle 'bestseller' and 'newArrival'
+        categoryId: '' // Add categoryId to filters
     });
+
+    useEffect(() => {
+        // Fetch categories for the dropdown
+        const fetchCategories = async () => {
+            try {
+                const response = await getAllCategories();
+                setCategories(response.data);
+            } catch (err) {
+                console.error("Error fetching categories:", err);
+                // Not setting a page-level error for this, as the page can still function
+            }
+        };
+
+        fetchCategories();
+    }, []); // Fetch categories only once
 
     useEffect(() => {
         const fetchProducts = async () => {
@@ -20,6 +37,7 @@ const ProductsPage = () => {
                     search: filters.search,
                     maxPrice: filters.maxPrice,
                     brand: filters.brand,
+                    categoryId: filters.categoryId // Pass categoryId to params
                 };
 
                 // Add bestseller or newArrival to params based on the specialFilter value
@@ -66,7 +84,7 @@ const ProductsPage = () => {
             <h1 className="text-3xl font-bold text-center text-gray-800 mb-8">All Products</h1>
 
             {/* Filter and Search Section */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8 p-4 bg-white rounded-lg shadow">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8 p-4 bg-white rounded-lg shadow">
                 <input
                     type="text"
                     name="search"
@@ -91,6 +109,20 @@ const ProductsPage = () => {
                     onChange={handleFilterChange}
                     className="p-2 border rounded"
                 />
+                {/* Category Dropdown */}
+                <select
+                    name="categoryId"
+                    value={filters.categoryId}
+                    onChange={handleFilterChange}
+                    className="p-2 border rounded"
+                >
+                    <option value="">All Categories</option>
+                    {categories.map(category => (
+                        <option key={category.id} value={category.id}>
+                            {category.name}
+                        </option>
+                    ))}
+                </select>
                 <select
                     name="specialFilter"
                     value={filters.specialFilter}
