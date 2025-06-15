@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getProductById, createProduct, updateProduct, getAllCategories } from '../../api/apiService.js';
+import { getProductById, createProduct, updateProduct, getAllCategories, uploadDescriptionImage } from '../../api/apiService.js';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 
@@ -21,6 +21,48 @@ const AdminProductForm = () => {
     const [images, setImages] = useState([]);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
+    const quillRef = useRef(null);
+
+    const imageHandler = () => {
+        const input = document.createElement('input');
+        input.setAttribute('type', 'file');
+        input.setAttribute('accept', 'image/*');
+        input.click();
+
+        input.onchange = async () => {
+            const file = input.files[0];
+            if (file) {
+                const formData = new FormData();
+                formData.append('image', file);
+                try {
+                    const response = await uploadDescriptionImage(formData);
+                    const imageUrl = `http://localhost:8080${response.data.url}`;
+                    const quill = quillRef.current.getEditor();
+                    const range = quill.getSelection(true);
+                    quill.insertEmbed(range.index, 'image', imageUrl);
+                } catch (error) {
+                    setError('Image upload failed: ' + (error.response?.data?.message || 'Server error'));
+                }
+            }
+        };
+    };
+
+    const modules = {
+        toolbar: {
+            container: [
+                [{ 'header': '1'}, {'header': '2'}, { 'font': [] }],
+                [{size: []}],
+                ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+                [{'list': 'ordered'}, {'list': 'bullet'},
+                    {'indent': '-1'}, {'indent': '+1'}],
+                ['link', 'image', 'video'],
+                ['clean']
+            ],
+            handlers: {
+                image: imageHandler,
+            },
+        },
+    };
 
     useEffect(() => {
         const fetchCategories = async () => {
@@ -105,9 +147,11 @@ const AdminProductForm = () => {
                 <div className="mb-4">
                     <label htmlFor="description" className="block text-sm font-medium text-gray-700">Description</label>
                     <ReactQuill
+                        ref={quillRef}
                         theme="snow"
                         value={product.description}
                         onChange={handleDescriptionChange}
+                        modules={modules}
                         className="mt-1 bg-white"
                     />
                 </div>

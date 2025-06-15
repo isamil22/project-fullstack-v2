@@ -143,3 +143,11 @@ export const approveReview = (reviewId) => {
 export const deleteReview = (reviewId) => {
     return apiService.delete(`/reviews/${reviewId}`);
 };
+
+export const uploadDescriptionImage = (imageData) => {
+    return apiService.post('/products/description-image', imageData, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        },
+    });
+};

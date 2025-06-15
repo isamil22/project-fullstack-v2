@@ -145,6 +145,14 @@ public class ProductService {
         return fileName;
     }
 
+    public String saveImageAndGetUrl(MultipartFile image) throws IOException {
+        if (image.isEmpty()) {
+            throw new IOException("Failed to store empty file.");
+        }
+        String fileName = saveImage(image);
+        return "/images/" + fileName;
+    }
+
     // --- HELPER METHOD ADDED ---
     private ProductListDTO convertToProductListDTO(Product product) {
         String imageUrl = (product.getImages() != null && !product.getImages().isEmpty())

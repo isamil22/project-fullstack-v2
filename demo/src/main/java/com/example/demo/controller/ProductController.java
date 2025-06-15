@@ -17,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/products")
@@ -86,5 +87,12 @@ public class ProductController {
             @RequestParam(required = false) Long categoryId, // Add this
             @PageableDefault(size = 12, sort = "name") Pageable pageable) {
         return ResponseEntity.ok(productService.getAllProducts(search, minPrice, maxPrice, brand, bestseller, newArrival, categoryId, pageable)); // Pass it here
+    }
+
+    @PostMapping("/description-image")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Map<String, String>> uploadDescriptionImage(@RequestParam("image") MultipartFile image) throws IOException {
+        String imageUrl = productService.saveImageAndGetUrl(image);
+        return ResponseEntity.ok(Map.of("url", imageUrl));
     }
 }
