@@ -16,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/products")
@@ -49,16 +50,16 @@ public class ProductController {
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ProductDTO> createProduct(@RequestPart("product") @Valid ProductDTO productDTO,
-                                                    @RequestPart(value = "image", required = false) MultipartFile image) throws IOException {
-        return ResponseEntity.ok(productService.createProduct(productDTO, image));
+                                                    @RequestPart(value = "images", required = false) List<MultipartFile> images) throws IOException {
+        return ResponseEntity.ok(productService.createProduct(productDTO, images));
     }
 
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ProductDTO> updateProduct(@PathVariable Long id,
                                                     @RequestPart("product") @Valid ProductDTO productDTO,
-                                                    @RequestPart(value = "image", required = false) MultipartFile image) throws IOException {
-        return ResponseEntity.ok(productService.updateProduct(id, productDTO, image));
+                                                    @RequestPart(value = "images", required = false) List<MultipartFile> images) throws IOException {
+        return ResponseEntity.ok(productService.updateProduct(id, productDTO, images));
     }
 
     @DeleteMapping("/{id}")

@@ -8,12 +8,17 @@ const ProductDetailPage = () => {
     const [error, setError] = useState(null);
     const [quantity, setQuantity] = useState(1);
     const [message, setMessage] = useState('');
+    const [selectedImage, setSelectedImage] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
         getProductById(id)
             .then(response => {
                 setProduct(response.data);
+                // Set the main image to the product's default image on load
+                if (response.data.image) {
+                    setSelectedImage(`http://localhost:8080${response.data.image}`);
+                }
             })
             .catch(err => {
                 console.error(`Error fetching product with id ${id}:`, err);
@@ -49,27 +54,52 @@ const ProductDetailPage = () => {
         return <p className="text-center mt-10">Loading product details...</p>;
     }
 
-    const fullImageUrl = product.image
-        ? `http://localhost:8080${product.image}`
-        : 'https://placehold.co/600x400/E91E63/FFFFFF?text=Product';
+    // Placeholder for multiple images.
+    // To implement fully, the backend Product model would need a list of image URLs.
+    const imageList = product.image ? [
+        `http://localhost:8080${product.image}`,
+        'https://placehold.co/600x400/d1d4d9/7d7f82?text=Image+2',
+        'https://placehold.co/600x400/d1d4d9/7d7f82?text=Image+3',
+        'https://placehold.co/600x400/d1d4d9/7d7f82?text=Image+4'
+    ] : ['https://placehold.co/600x400/E91E63/FFFFFF?text=Product'];
+
 
     return (
         <div className="container mx-auto px-4 py-12">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
+                {/* Image Gallery Section */}
                 <div>
-                    <img
-                        src={fullImageUrl}
-                        alt={product.name}
-                        className="w-full h-auto rounded-lg shadow-lg bg-gray-200"
-                        onError={(e) => {
-                            e.currentTarget.onerror = null;
-                            e.currentTarget.src = 'https://placehold.co/600x400/E91E63/FFFFFF?text=No+Image';
-                        }}
-                    />
+                    <div className="mb-4">
+                        <img
+                            src={selectedImage || imageList[0]}
+                            alt={product.name}
+                            className="w-full h-auto rounded-lg shadow-lg bg-gray-200 object-cover aspect-square"
+                            onError={(e) => {
+                                e.currentTarget.onerror = null;
+                                e.currentTarget.src = 'https://placehold.co/600x400/E91E63/FFFFFF?text=No+Image';
+                            }}
+                        />
+                    </div>
+                    <div className="grid grid-cols-4 gap-2">
+                        {imageList.map((img, index) => (
+                            <img
+                                key={index}
+                                src={img}
+                                alt={`${product.name} thumbnail ${index + 1}`}
+                                className={`w-full h-24 object-cover rounded-md cursor-pointer border-2 ${selectedImage === img ? 'border-pink-500' : 'border-transparent'}`}
+                                onClick={() => setSelectedImage(img)}
+                                onError={(e) => {
+                                    e.currentTarget.onerror = null;
+                                    e.currentTarget.style.display = 'none';
+                                }}
+                            />
+                        ))}
+                    </div>
                 </div>
+
+                {/* Product Details and Actions Section */}
                 <div>
                     <h1 className="text-4xl font-extrabold text-gray-800 mb-4">{product.name}</h1>
-                    <p className="text-gray-600 mb-6">{product.description}</p>
                     <p className="text-3xl text-pink-500 font-bold mb-6">${product.price.toFixed(2)}</p>
 
                     <div className="flex items-center space-x-4 mb-6">
@@ -105,6 +135,34 @@ const ProductDetailPage = () => {
                     >
                         Keep Shopping
                     </button>
+                </div>
+            </div>
+
+            {/* Description and Comments Section */}
+            <div className="mt-16">
+                <div className="border-b border-gray-200">
+                    <h2 className="text-2xl font-bold text-gray-800 py-4">Product Description</h2>
+                </div>
+                <p className="text-gray-600 mt-4">{product.description}</p>
+            </div>
+
+            <div className="mt-12">
+                <div className="border-b border-gray-200">
+                    <h2 className="text-2xl font-bold text-gray-800 py-4">Customer Comments</h2>
+                </div>
+                <div className="space-y-6 mt-4">
+                    {product.comments && product.comments.length > 0 ? (
+                        product.comments.map(comment => (
+                            <div key={comment.id} className="bg-gray-50 p-4 rounded-lg">
+                                <p className="text-gray-700">{comment.content}</p>
+                                <p className="text-sm text-gray-500 mt-2">
+                                    - User ID: {comment.userId}, Score: {comment.score}/5
+                                </p>
+                            </div>
+                        ))
+                    ) : (
+                        <p className="text-gray-500">No comments yet.</p>
+                    )}
                 </div>
             </div>
         </div>

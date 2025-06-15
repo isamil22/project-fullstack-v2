@@ -23,6 +23,8 @@ import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -37,7 +39,7 @@ public class ProductService {
     private String uploadDir;
 
     @Transactional
-    public ProductDTO createProduct(ProductDTO productDTO, MultipartFile image) throws IOException {
+    public ProductDTO createProduct(ProductDTO productDTO, List<MultipartFile> images) throws IOException {
         Category category = categoryRepository.findById(productDTO.getCategoryId())
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found with ID: " + productDTO.getCategoryId()));
 
@@ -47,16 +49,22 @@ public class ProductService {
         product.setBestseller(productDTO.isBestseller());
         product.setNewArrival(productDTO.isNewArrival());
 
-        if (image != null && !image.isEmpty()) {
-            String fileName = saveImage(image);
-            product.setImage("/images/" + fileName);
+        if (images != null && !images.isEmpty()) {
+            List<String> imagePaths = new ArrayList<>();
+            for (MultipartFile image : images) {
+                if (!image.isEmpty()) {
+                    String fileName = saveImage(image);
+                    imagePaths.add("/images/" + fileName);
+                }
+            }
+            product.setImages(imagePaths);
         }
         Product savedProduct = productRepository.save(product);
         return productMapper.toDTO(savedProduct);
     }
 
     @Transactional
-    public ProductDTO updateProduct(Long id, ProductDTO productDTO, MultipartFile image) throws IOException {
+    public ProductDTO updateProduct(Long id, ProductDTO productDTO, List<MultipartFile> images) throws IOException {
         Product existingProduct = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
@@ -72,28 +80,39 @@ public class ProductService {
         existingProduct.setBestseller(productDTO.isBestseller());
         existingProduct.setNewArrival(productDTO.isNewArrival());
 
-        if (image != null && !image.isEmpty()) {
-            String fileName = saveImage(image);
-            existingProduct.setImage("/images/" + fileName);
+        if (images != null && !images.isEmpty()) {
+            List<String> imagePaths = new ArrayList<>();
+            for (MultipartFile image : images) {
+                if (!image.isEmpty()) {
+                    String fileName = saveImage(image);
+                    imagePaths.add("/images/" + fileName);
+                }
+            }
+            existingProduct.setImages(imagePaths);
         }
         Product updatedProduct = productRepository.save(existingProduct);
         return productMapper.toDTO(updatedProduct);
     }
 
+    // --- MODIFIED START ---
     public Page<ProductListDTO> getProductsByCategoryId(Long categoryId, Pageable pageable) {
         if (!categoryRepository.existsById(categoryId)) {
             throw new ResourceNotFoundException("Cannot find products for a non-existent category with ID: " + categoryId);
         }
-        return productRepository.findByCategoryId(categoryId, pageable);
+        Page<Product> products = productRepository.findByCategoryId(categoryId, pageable);
+        return products.map(this::convertToProductListDTO);
     }
 
     public Page<ProductListDTO> getBestsellers(Pageable pageable) {
-        return productRepository.findBestsellers(pageable);
+        Page<Product> products = productRepository.findByBestsellerIsTrue(pageable);
+        return products.map(this::convertToProductListDTO);
     }
 
     public Page<ProductListDTO> getNewArrivals(Pageable pageable) {
-        return productRepository.findNewArrivals(pageable);
+        Page<Product> products = productRepository.findByNewArrivalIsTrue(pageable);
+        return products.map(this::convertToProductListDTO);
     }
+    // --- MODIFIED END ---
 
     @Transactional
     public void deleteProduct(Long id) {
@@ -113,15 +132,7 @@ public class ProductService {
     public Page<ProductListDTO> getAllProducts(String search, BigDecimal minPrice, BigDecimal maxPrice, String brand, Boolean bestseller, Boolean newArrival, Long categoryId, Pageable pageable) {
         Specification<Product> spec = productSpecification.getProducts(search, minPrice, maxPrice, brand, bestseller, newArrival, categoryId);
         return productRepository.findAll(spec, pageable)
-                .map(product -> new ProductListDTO(
-                        product.getId(),
-                        product.getName(),
-                        product.getDescription(),
-                        product.getPrice(),
-                        product.getQuantity(),
-                        product.getImage(),
-                        product.getBrand()
-                ));
+                .map(this::convertToProductListDTO);
     }
 
     private String saveImage(MultipartFile image) throws IOException {
@@ -132,5 +143,22 @@ public class ProductService {
         Files.createDirectories(path.getParent());
         Files.write(path, image.getBytes());
         return fileName;
+    }
+
+    // --- HELPER METHOD ADDED ---
+    private ProductListDTO convertToProductListDTO(Product product) {
+        String imageUrl = (product.getImages() != null && !product.getImages().isEmpty())
+                ? product.getImages().get(0)
+                : null;
+
+        return new ProductListDTO(
+                product.getId(),
+                product.getName(),
+                product.getDescription(),
+                product.getPrice(),
+                product.getQuantity(),
+                imageUrl,
+                product.getBrand()
+        );
     }
 }

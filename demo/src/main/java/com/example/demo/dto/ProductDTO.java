@@ -20,7 +20,9 @@ public class ProductDTO {
     private BigDecimal price;
     @PositiveOrZero(message = "Cannot be negative")
     private Integer quantity;
-    private String image;
+
+    private List<String> images;
+
     private List<CommentDTO> comments;
 
     @NotBlank(message = "Brand is required")

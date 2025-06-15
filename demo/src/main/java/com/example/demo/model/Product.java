@@ -21,7 +21,10 @@ public class Product {
     private String description;
     private BigDecimal price;
     private Integer quantity;
-    private String image;
+
+    @ElementCollection
+    private List<String> images = new ArrayList<>();
+
     private String brand;
     private boolean bestseller;
     private boolean newArrival; // Added for new arrivals
