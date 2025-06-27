@@ -2,9 +2,9 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 const ProductCard = ({ product }) => {
-    // SOLUTION: Use the 'image' property and prepend the backend server's URL.
+    // SOLUTION: Use the 'image' property directly from the S3 URL.
     const fullImageUrl = product.image
-        ? `http://localhost:8080${product.image}`
+        ? product.image
         : 'https://placehold.co/300x300/E91E63/FFFFFF?text=Product';
 
     return (

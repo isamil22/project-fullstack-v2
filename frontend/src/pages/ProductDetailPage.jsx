@@ -16,7 +16,7 @@ const ProductDetailPage = () => {
             .then(response => {
                 setProduct(response.data);
                 if (response.data.images && response.data.images.length > 0) {
-                    setSelectedImage(`http://localhost:8080${response.data.images[0]}`);
+                    setSelectedImage(response.data.images[0]); // Use the S3 URL directly
                 }
             })
             .catch(err => {
@@ -53,8 +53,9 @@ const ProductDetailPage = () => {
         return <p className="text-center mt-10">Loading product details...</p>;
     }
 
+    // Use the S3 URLs directly from the product data
     const imageList = product.images && product.images.length > 0
-        ? product.images.map(img => `http://localhost:8080${img}`)
+        ? product.images
         : ['https://placehold.co/600x400/E91E63/FFFFFF?text=Product'];
 
 

@@ -46,7 +46,8 @@ const HomePage = () => {
         fetchData();
     }, []);
 
-    const heroImageUrl = hero?.imageUrl?.startsWith('http') ? hero.imageUrl : `http://localhost:8080${hero?.imageUrl}`;
+    // Use the S3 URL directly
+    const heroImageUrl = hero?.imageUrl;
 
     return (
         <div className="container mx-auto px-4 py-8">
@@ -78,7 +79,8 @@ const HomePage = () => {
                             className="group relative block bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow overflow-hidden aspect-square"
                         >
                             <img
-                                src={`http://localhost:8080${category.imageUrl}` || `https://placehold.co/400x400/fde4f2/E91E63?text=${encodeURIComponent(category.name)}`}
+                                // Use the S3 URL directly
+                                src={category.imageUrl || `https://placehold.co/400x400/fde4f2/E91E63?text=${encodeURIComponent(category.name)}`}
                                 alt={category.name}
                                 className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                             />
@@ -133,3 +135,5 @@ const HomePage = () => {
 };
 
 export default HomePage;
+
+
