@@ -1,0 +1,41 @@
+services:
+  db:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_DATABASE: 'sms'
+      MYSQL_USER: 'user'
+      MYSQL_PASSWORD: 'password'
+      MYSQL_ROOT_PASSWORD: 'root'
+    ports:
+      - '3307:3306'
+    volumes:
+      - db_data:/var/lib/mysql
+
+  backend:
+    build: ./demo
+    restart: always
+    ports:
+      - '8082:8080'
+    depends_on:
+      - db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/sms
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: password
+      # Pass AWS variables from the .env file to the container
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_REGION: ${AWS_REGION}
+      AWS_S3_BUCKET_NAME: ${AWS_S3_BUCKET_NAME}
+
+  frontend:
+    build: ./frontend
+    restart: always
+    ports:
+      - '8081:80'
+    depends_on:
+      - backend
+
+volumes:
+  db_data:
