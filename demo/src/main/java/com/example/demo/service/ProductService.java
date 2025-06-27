@@ -11,7 +11,6 @@ import com.example.demo.repositories.ProductRepository;
 import com.example.demo.specification.ProductSpecification;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -20,12 +19,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -34,9 +29,7 @@ public class ProductService {
     private final CategoryRepository categoryRepository;
     private final ProductMapper productMapper;
     private final ProductSpecification productSpecification;
-
-    @Value("${file.upload-dir}")
-    private String uploadDir;
+    private final S3Service s3Service; // Injected S3Service
 
     @Transactional
     public ProductDTO createProduct(ProductDTO productDTO, List<MultipartFile> images) throws IOException {
@@ -50,14 +43,14 @@ public class ProductService {
         product.setNewArrival(productDTO.isNewArrival());
 
         if (images != null && !images.isEmpty()) {
-            List<String> imagePaths = new ArrayList<>();
+            List<String> imageUrls = new ArrayList<>();
             for (MultipartFile image : images) {
                 if (!image.isEmpty()) {
-                    String fileName = saveImage(image);
-                    imagePaths.add("/images/" + fileName);
+                    String imageUrl = s3Service.saveImage(image); // Use S3Service
+                    imageUrls.add(imageUrl);
                 }
             }
-            product.setImages(imagePaths);
+            product.setImages(imageUrls);
         }
         Product savedProduct = productRepository.save(product);
         return productMapper.toDTO(savedProduct);
@@ -81,20 +74,19 @@ public class ProductService {
         existingProduct.setNewArrival(productDTO.isNewArrival());
 
         if (images != null && !images.isEmpty()) {
-            List<String> imagePaths = new ArrayList<>();
+            List<String> imageUrls = new ArrayList<>();
             for (MultipartFile image : images) {
                 if (!image.isEmpty()) {
-                    String fileName = saveImage(image);
-                    imagePaths.add("/images/" + fileName);
+                    String imageUrl = s3Service.saveImage(image); // Use S3Service
+                    imageUrls.add(imageUrl);
                 }
             }
-            existingProduct.setImages(imagePaths);
+            existingProduct.setImages(imageUrls);
         }
         Product updatedProduct = productRepository.save(existingProduct);
         return productMapper.toDTO(updatedProduct);
     }
 
-    // --- MODIFIED START ---
     public Page<ProductListDTO> getProductsByCategoryId(Long categoryId, Pageable pageable) {
         if (!categoryRepository.existsById(categoryId)) {
             throw new ResourceNotFoundException("Cannot find products for a non-existent category with ID: " + categoryId);
@@ -112,7 +104,6 @@ public class ProductService {
         Page<Product> products = productRepository.findByNewArrivalIsTrue(pageable);
         return products.map(this::convertToProductListDTO);
     }
-    // --- MODIFIED END ---
 
     @Transactional
     public void deleteProduct(Long id) {
@@ -128,32 +119,19 @@ public class ProductService {
         return productMapper.toDTO(product);
     }
 
-
     public Page<ProductListDTO> getAllProducts(String search, BigDecimal minPrice, BigDecimal maxPrice, String brand, Boolean bestseller, Boolean newArrival, Long categoryId, Pageable pageable) {
         Specification<Product> spec = productSpecification.getProducts(search, minPrice, maxPrice, brand, bestseller, newArrival, categoryId);
         return productRepository.findAll(spec, pageable)
                 .map(this::convertToProductListDTO);
     }
 
-    private String saveImage(MultipartFile image) throws IOException {
-        String fileName = UUID.randomUUID().toString() + "_" + image.getOriginalFilename();
-
-        Path path = Paths.get(uploadDir + "/images/" + fileName);
-
-        Files.createDirectories(path.getParent());
-        Files.write(path, image.getBytes());
-        return fileName;
-    }
-
     public String saveImageAndGetUrl(MultipartFile image) throws IOException {
         if (image.isEmpty()) {
             throw new IOException("Failed to store empty file.");
         }
-        String fileName = saveImage(image);
-        return "/images/" + fileName;
+        return s3Service.saveImage(image); // Use S3Service
     }
 
-    // --- HELPER METHOD ADDED ---
     private ProductListDTO convertToProductListDTO(Product product) {
         String imageUrl = (product.getImages() != null && !product.getImages().isEmpty())
                 ? product.getImages().get(0)
