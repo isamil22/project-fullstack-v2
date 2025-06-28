@@ -4,8 +4,10 @@ services:
     restart: always
     environment:
       MYSQL_DATABASE: 'sms'
+      # Creates a dedicated user for your app
       MYSQL_USER: 'user'
       MYSQL_PASSWORD: 'password'
+      # Sets the root password, which we won't use in the app
       MYSQL_ROOT_PASSWORD: 'root'
     ports:
       - '3307:3306'
@@ -20,10 +22,11 @@ services:
     depends_on:
       - db
     environment:
+      # This configures the backend INSIDE Docker to use the dedicated user
       SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/sms
       SPRING_DATASOURCE_USERNAME: user
       SPRING_DATASOURCE_PASSWORD: password
-      # Pass AWS variables from the .env file to the container
+      # AWS credentials
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
       AWS_REGION: ${AWS_REGION}
