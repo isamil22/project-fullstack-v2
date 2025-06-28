@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import apiService from '../../api/apiService';
 import { toast } from 'react-toastify';
+import {
+    getAllCategories,
+    getProductById,
+    updateProduct,
+    createProduct
+} from '../../api/apiService';
 
 const AdminProductForm = () => {
     const [product, setProduct] = useState({ name: '', description: '', price: '', quantity: '', categoryId: '', brand: '', bestseller: false, newArrival: false });
@@ -12,9 +17,9 @@ const AdminProductForm = () => {
     const { id } = useParams();
 
     useEffect(() => {
-        apiService.get('/categories').then(response => setCategories(response.data));
+        getAllCategories().then(response => setCategories(response.data));
         if (id) {
-            apiService.get(`/products/${id}`).then(response => {
+            getProductById(id).then(response => {
                 setProduct(response.data);
             });
         }
@@ -33,20 +38,18 @@ const AdminProductForm = () => {
         e.preventDefault();
         setIsLoading(true);
 
-        try {
-            // Step 1: Create product with text-based data
-            const productResponse = await (id ? apiService.put(`/products/${id}`, product) : apiService.post('/products', product));
-            const newProductId = productResponse.data.id;
+        const formData = new FormData();
+        formData.append('product', new Blob([JSON.stringify(product)], { type: "application/json" }));
 
-            // Step 2: Upload images if any
-            if (images.length > 0) {
-                const formData = new FormData();
-                for (let i = 0; i < images.length; i++) {
-                    formData.append('images', images[i]);
-                }
-                await apiService.post(`/products/${newProductId}/images`, formData, {
-                    headers: { 'Content-Type': 'multipart/form-data' }
-                });
+        for (let i = 0; i < images.length; i++) {
+            formData.append('images', images[i]);
+        }
+
+        try {
+            if (id) {
+                await updateProduct(id, formData);
+            } else {
+                await createProduct(formData);
             }
 
             toast.success(`Product ${id ? 'updated' : 'created'} successfully!`);
