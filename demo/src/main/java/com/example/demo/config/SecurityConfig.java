@@ -20,7 +20,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-// Add these imports
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -40,34 +39,32 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable())
-                // Add this line to integrate CORS configuration
-                .cors(withDefaults())
-                .authorizeHttpRequests(auth-> auth
-                        .requestMatchers("/").permitAll()
-                        .requestMatchers("/images/**").permitAll()
-                        .requestMatchers("/index.html").permitAll()
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
-                        .requestMatchers("/api/auth/change-password").authenticated()
-                        .requestMatchers(HttpMethod.GET, "/api/**").permitAll()
-                        .requestMatchers("/images/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/reviews/approved").permitAll()
+                .cors(withDefaults()) // Apply CORS settings from the corsConfigurationSource bean
+                .csrf(csrf -> csrf.disable()) // Disable CSRF as we are using a stateless JWT-based API
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Ensure the API is stateless
+                .authorizeHttpRequests(auth -> auth
+                        // --- PUBLIC ENDPOINTS ---
+                        // Allow all auth-related POST requests for login and registration
+                        .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/register", "/api/auth/confirm-email").permitAll()
+                        // Allow all GET requests for public data fetching
+                        .requestMatchers(HttpMethod.GET, "/api/products/**", "/api/categories/**", "/api/reviews/approved", "/api/hero").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/comments/product/**").permitAll()
+                        // Allow access to static resources if any are served from root
+                        .requestMatchers("/", "/index.html", "/images/**").permitAll()
+
+                        // --- PROTECTED ENDPOINTS ---
+                        // All other requests must be authenticated
                         .anyRequest().authenticated()
-                )
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-    // Add this new Bean to configure CORS
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // This is the origin of your React app
+        // The origin of your React development server
         configuration.setAllowedOrigins(List.of("http://localhost:5173"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
