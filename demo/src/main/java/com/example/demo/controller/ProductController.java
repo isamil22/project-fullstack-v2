@@ -33,6 +33,18 @@ public class ProductController {
         return ResponseEntity.ok(updatedProduct);
     }
 
+    // START: Added methods
+    @GetMapping("/bestsellers")
+    public ResponseEntity<List<ProductDTO>> getBestsellers() {
+        return ResponseEntity.ok(productService.getBestsellers());
+    }
+
+    @GetMapping("/new-arrivals")
+    public ResponseEntity<List<ProductDTO>> getNewArrivals() {
+        return ResponseEntity.ok(productService.getNewArrivals());
+    }
+    // END: Added methods
+
     // No changes to the other methods
     @GetMapping
     public ResponseEntity<List<ProductDTO>> getAllProducts() {

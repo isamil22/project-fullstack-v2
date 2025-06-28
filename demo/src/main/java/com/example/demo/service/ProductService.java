@@ -6,6 +6,7 @@ import com.example.demo.mapper.ProductMapper;
 import com.example.demo.model.Product;
 import com.example.demo.repositories.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -60,6 +61,20 @@ public class ProductService {
                 .map(productMapper::toDTO)
                 .collect(Collectors.toList());
     }
+
+    // START: Added methods
+    public List<ProductDTO> getBestsellers() {
+        return productRepository.findByBestsellerIsTrue(Pageable.unpaged()).getContent().stream()
+                .map(productMapper::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    public List<ProductDTO> getNewArrivals() {
+        return productRepository.findByNewArrivalIsTrue(Pageable.unpaged()).getContent().stream()
+                .map(productMapper::toDTO)
+                .collect(Collectors.toList());
+    }
+    // END: Added methods
 
     public ProductDTO getProductById(Long id) {
         Product product = productRepository.findById(id)
