@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getProductById, addToCart } from '../api/apiService';
+import Loader from '../components/Loader'; // <-- Import Loader
 
 const ProductDetailPage = () => {
     const { id } = useParams();
@@ -9,19 +10,24 @@ const ProductDetailPage = () => {
     const [quantity, setQuantity] = useState(1);
     const [message, setMessage] = useState('');
     const [selectedImage, setSelectedImage] = useState(null);
+    const [loading, setLoading] = useState(true); // <-- Add loading state
     const navigate = useNavigate();
 
     useEffect(() => {
+        setLoading(true);
         getProductById(id)
             .then(response => {
                 setProduct(response.data);
                 if (response.data.images && response.data.images.length > 0) {
-                    setSelectedImage(response.data.images[0]); // Use the S3 URL directly
+                    setSelectedImage(response.data.images[0]);
                 }
             })
             .catch(err => {
                 console.error(`Error fetching product with id ${id}:`, err);
                 setError("Product not found or an error occurred.");
+            })
+            .finally(() => {
+                setLoading(false);
             });
     }, [id]);
 
@@ -45,15 +51,19 @@ const ProductDetailPage = () => {
         }
     };
 
+    if (loading) {
+        return <Loader />;
+    }
+
     if (error) {
         return <p className="text-center text-red-500 mt-10">{error}</p>;
     }
 
+    // This will only be reached if loading is false and there is no product
     if (!product) {
-        return <p className="text-center mt-10">Loading product details...</p>;
+        return <p className="text-center mt-10">Product not found.</p>;
     }
 
-    // Use the S3 URLs directly from the product data
     const imageList = product.images && product.images.length > 0
         ? product.images
         : ['https://placehold.co/600x400/E91E63/FFFFFF?text=Product'];
@@ -133,9 +143,9 @@ const ProductDetailPage = () => {
                 </div>
             </div>
 
-            {/* Description and Comments Section - HORIZONTAL LAYOUT */}
+            {/* Description and Comments Section */}
             <div className="mt-16 grid grid-cols-1 md:grid-cols-2 gap-12">
-                {/* Column 1: Description */}
+                {/* Description */}
                 <div>
                     <div className="border-b border-gray-200 mb-4">
                         <h2 className="text-2xl font-bold text-gray-800 py-4">Product Description</h2>
@@ -146,7 +156,7 @@ const ProductDetailPage = () => {
                     />
                 </div>
 
-                {/* Column 2: Comments */}
+                {/* Comments */}
                 <div>
                     <div className="border-b border-gray-200 mb-4">
                         <h2 className="text-2xl font-bold text-gray-800 py-4">Customer Comments</h2>

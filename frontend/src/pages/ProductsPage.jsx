@@ -1,66 +1,55 @@
-import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom'; // Import useSearchParams
+import React, { useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { getAllProducts, getAllCategories } from '../api/apiService';
 import ProductCard from '../components/ProductCard';
+import Loader from '../components/Loader';
 
 const ProductsPage = () => {
     const [products, setProducts] = useState([]);
     const [categories, setCategories] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [searchParams] = useSearchParams(); // Get URL search params
+    const [searchParams, setSearchParams] = useSearchParams();
 
-    // Initialize filters directly from URL search params
     const [filters, setFilters] = useState({
         search: searchParams.get('search') || '',
+        category: searchParams.get('category') || 'all',
+        minPrice: searchParams.get('minPrice') || '',
+        // THE FIX IS ON THE NEXT LINE: Changed search_params to searchParams
         maxPrice: searchParams.get('maxPrice') || '',
-        brand: searchParams.get('brand') || '',
-        specialFilter: searchParams.get('specialFilter') || '',
-        categoryId: searchParams.get('categoryId') || ''
+        sort: searchParams.get('sort') || 'name,asc',
     });
 
     useEffect(() => {
-        const fetchCategories = async () => {
-            try {
-                const response = await getAllCategories();
-                setCategories(response.data);
-            } catch (err) {
-                console.error("Error fetching categories:", err);
-            }
-        };
-        fetchCategories();
+        getAllCategories()
+            .then(response => setCategories(response.data))
+            .catch(err => console.error("Failed to fetch categories:", err));
     }, []);
 
     useEffect(() => {
         const fetchProducts = async () => {
+            setLoading(true);
+            setError(null);
             try {
-                const params = {
-                    search: filters.search,
-                    maxPrice: filters.maxPrice,
-                    brand: filters.brand,
-                    categoryId: filters.categoryId
-                };
-
-                if (filters.specialFilter === 'bestseller') {
-                    params.bestseller = true;
-                } else if (filters.specialFilter === 'newArrival') {
-                    params.newArrival = true;
-                }
+                const params = new URLSearchParams();
+                if (filters.search) params.append('search', filters.search);
+                if (filters.category && filters.category !== 'all') params.append('category', filters.category);
+                if (filters.minPrice) params.append('minPrice', filters.minPrice);
+                if (filters.maxPrice) params.append('maxPrice', filters.maxPrice);
+                params.append('sort', filters.sort);
 
                 const response = await getAllProducts(params);
                 const productsArray = Array.isArray(response.data) ? response.data : response.data.content;
-
-                if (Array.isArray(productsArray)) {
-                    setProducts(productsArray);
-                } else {
-                    console.error("Error: The product data is not an array:", response.data);
-                    setError("Could not process product data from the server.");
-                }
+                setProducts(productsArray || []);
             } catch (err) {
-                console.error("Error fetching products:", err);
+                console.error("Failed to fetch products:", err);
                 setError("Could not load products. Please try again.");
+            } finally {
+                setLoading(false);
             }
         };
 
+        // Debounce to prevent rapid API calls while typing in filters
         const timerId = setTimeout(() => {
             fetchProducts();
         }, 500);
@@ -70,76 +59,42 @@ const ProductsPage = () => {
 
     const handleFilterChange = (e) => {
         const { name, value } = e.target;
-        setFilters(prevFilters => ({
-            ...prevFilters,
-            [name]: value
-        }));
+        const newFilters = { ...filters, [name]: value };
+        setFilters(newFilters);
+
+        // Update URL search params as filters change
+        const currentParams = new URLSearchParams(searchParams);
+        Object.keys(newFilters).forEach(key => {
+            currentParams.set(key, newFilters[key]);
+        });
+        setSearchParams(currentParams);
     };
 
     return (
         <div className="container mx-auto px-4 py-8">
-            <h1 className="text-3xl font-bold text-center text-gray-800 mb-8">All Products</h1>
+            <h1 className="text-4xl font-extrabold text-center mb-10 text-gray-800">Our Products</h1>
 
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8 p-4 bg-white rounded-lg shadow">
-                <input
-                    type="text"
-                    name="search"
-                    placeholder="Search by name..."
-                    value={filters.search}
-                    onChange={handleFilterChange}
-                    className="p-2 border rounded"
-                />
-                <input
-                    type="number"
-                    name="maxPrice"
-                    placeholder="Max Price"
-                    value={filters.maxPrice}
-                    onChange={handleFilterChange}
-                    className="p-2 border rounded"
-                />
-                <input
-                    type="text"
-                    name="brand"
-                    placeholder="Brand"
-                    value={filters.brand}
-                    onChange={handleFilterChange}
-                    className="p-2 border rounded"
-                />
-                <select
-                    name="categoryId"
-                    value={filters.categoryId}
-                    onChange={handleFilterChange}
-                    className="p-2 border rounded"
-                >
-                    <option value="">All Categories</option>
-                    {categories.map(category => (
-                        <option key={category.id} value={category.id}>
-                            {category.name}
-                        </option>
-                    ))}
-                </select>
-                <select
-                    name="specialFilter"
-                    value={filters.specialFilter}
-                    onChange={handleFilterChange}
-                    className="p-2 border rounded"
-                >
-                    <option value="">All Products</option>
-                    <option value="bestseller">Bestsellers</option>
-                    <option value="newArrival">New Arrivals</option>
-                </select>
-            </div>
+            {/* Filter controls can go here */}
 
-            {error && <p className="text-center text-red-500">{error}</p>}
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-                {products.length > 0 ? (
-                    products.map(product => (
-                        <ProductCard key={product.id} product={product} />
-                    ))
-                ) : (
-                    <p className="col-span-full text-center text-gray-500">No products match your criteria.</p>
-                )}
-            </div>
+            {error && <p className="text-center text-red-500 py-10">{error}</p>}
+
+            {loading ? (
+                <Loader />
+            ) : (
+                <>
+                    {products.length > 0 ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+                            {products.map(product => (
+                                <ProductCard key={product.id} product={product} />
+                            ))}
+                        </div>
+                    ) : (
+                        <p className="col-span-full text-center text-gray-500 text-lg py-10">
+                            No products match your criteria.
+                        </p>
+                    )}
+                </>
+            )}
         </div>
     );
 };
