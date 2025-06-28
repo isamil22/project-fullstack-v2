@@ -64,8 +64,8 @@ public class SecurityConfig {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // The origin of your React development server
-        configuration.setAllowedOrigins(List.of("http://localhost:5173"));
+        // The origin of your React development server and the Dockerized frontend
+        configuration.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:8081"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         configuration.setAllowCredentials(true);
