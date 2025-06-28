@@ -2,9 +2,9 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 const ProductCard = ({ product }) => {
-    // SOLUTION: Use the 'image' property directly from the S3 URL.
-    const fullImageUrl = product.image
-        ? product.image
+    // Correctly access the first image from the 'images' array
+    const fullImageUrl = (product.images && product.images.length > 0)
+        ? product.images[0]
         : 'https://placehold.co/300x300/E91E63/FFFFFF?text=Product';
 
     return (
