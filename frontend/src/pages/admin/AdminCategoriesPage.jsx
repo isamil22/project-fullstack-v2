@@ -44,7 +44,7 @@ const AdminCategoriesPage = () => {
                     {categories.map(category => (
                         <li key={category.id} className="flex justify-between items-center p-3 border-b">
                             <div className="flex items-center gap-4">
-                                <img src={`http://localhost:8080${category.imageUrl}`} alt={category.name} className="w-16 h-16 object-cover rounded-md bg-gray-200" />
+                                <img src={category.imageUrl} alt={category.name} className="w-16 h-16 object-cover rounded-md bg-gray-200" />
                                 <p className="font-semibold">{category.name}</p>
                             </div>
                             <div className="space-x-3">
