@@ -3,14 +3,18 @@ package com.example.demo.service;
 import com.example.demo.dto.ProductDTO;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.mapper.ProductMapper;
+import com.example.demo.model.Category; // Import Category
 import com.example.demo.model.Product;
+import com.example.demo.repositories.CategoryRepository; // Import CategoryRepository
 import com.example.demo.repositories.ProductRepository;
+import jakarta.transaction.Transactional; // Import Transactional
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,48 +25,88 @@ public class ProductService {
     private ProductRepository productRepository;
 
     @Autowired
+    private CategoryRepository categoryRepository; // Inject CategoryRepository
+
+    @Autowired
     private S3Service s3Service;
 
     @Autowired
     private ProductMapper productMapper;
 
-    // This method now only saves the product with text-based data
-    public ProductDTO addProduct(ProductDTO productDTO) {
+    // NEW METHOD: Creates a product and uploads images in one go.
+    @Transactional
+    public ProductDTO createProductWithImages(ProductDTO productDTO, List<MultipartFile> images) throws IOException {
         Product product = productMapper.toEntity(productDTO);
+
+        Category category = categoryRepository.findById(productDTO.getCategoryId())
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found with ID: " + productDTO.getCategoryId()));
+        product.setCategory(category);
+
+        // Handle images
+        if (images != null && !images.isEmpty()) {
+            List<String> imageUrls = uploadAndGetImageUrls(images);
+            product.setImages(imageUrls);
+        } else {
+            product.setImages(new ArrayList<>());
+        }
+
         Product savedProduct = productRepository.save(product);
         return productMapper.toDTO(savedProduct);
     }
 
-    // This is the new method for uploading images
-    public ProductDTO uploadProductImages(Long productId, List<MultipartFile> images) throws IOException {
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + productId));
+    // NEW METHOD: Updates a product and its images.
+    @Transactional
+    public ProductDTO updateProductWithImages(Long id, ProductDTO productDTO, List<MultipartFile> images) throws IOException {
+        Product existingProduct = productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
 
-        List<String> imageUrls = images.stream()
+        // Update fields from DTO
+        existingProduct.setName(productDTO.getName());
+        existingProduct.setDescription(productDTO.getDescription());
+        existingProduct.setPrice(productDTO.getPrice());
+        existingProduct.setQuantity(productDTO.getQuantity());
+        existingProduct.setBrand(productDTO.getBrand());
+        existingProduct.setBestseller(productDTO.isBestseller());
+        existingProduct.setNewArrival(productDTO.isNewArrival());
+
+        if (!existingProduct.getCategory().getId().equals(productDTO.getCategoryId())) {
+            Category category = categoryRepository.findById(productDTO.getCategoryId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Category not found with ID: " + productDTO.getCategoryId()));
+            existingProduct.setCategory(category);
+        }
+
+        // Handle new images if they are provided
+        if (images != null && !images.isEmpty()) {
+            List<String> imageUrls = uploadAndGetImageUrls(images);
+            // Here you can decide whether to add to or replace existing images
+            existingProduct.getImages().clear(); // Example: replacing all images
+            existingProduct.getImages().addAll(imageUrls);
+        }
+
+        Product updatedProduct = productRepository.save(existingProduct);
+        return productMapper.toDTO(updatedProduct);
+    }
+
+    // Helper method to reduce code duplication
+    private List<String> uploadAndGetImageUrls(List<MultipartFile> images) {
+        return images.stream()
                 .map(image -> {
                     try {
-                        // Corrected method call to match your S3Service
                         return s3Service.saveImage(image);
                     } catch (IOException e) {
-                        // It's better to wrap the checked exception in an unchecked one for streams
                         throw new RuntimeException("Failed to upload image", e);
                     }
                 })
                 .collect(Collectors.toList());
-
-        product.getImages().addAll(imageUrls);
-        Product updatedProduct = productRepository.save(product);
-        return productMapper.toDTO(updatedProduct);
     }
 
-    // No changes to the other methods
+    // --- The rest of your service methods ---
     public List<ProductDTO> getAllProducts() {
         return productRepository.findAll().stream()
                 .map(productMapper::toDTO)
                 .collect(Collectors.toList());
     }
 
-    // START: Added methods
     public List<ProductDTO> getBestsellers() {
         return productRepository.findByBestsellerIsTrue(Pageable.unpaged()).getContent().stream()
                 .map(productMapper::toDTO)
@@ -74,23 +118,11 @@ public class ProductService {
                 .map(productMapper::toDTO)
                 .collect(Collectors.toList());
     }
-    // END: Added methods
 
     public ProductDTO getProductById(Long id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
         return productMapper.toDTO(product);
-    }
-
-    public ProductDTO updateProduct(Long id, ProductDTO productDTO) {
-        Product existingProduct = productRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
-
-        Product product = productMapper.toEntity(productDTO);
-        product.setId(existingProduct.getId()); // Ensure the ID is not changed
-
-        Product updatedProduct = productRepository.save(product);
-        return productMapper.toDTO(updatedProduct);
     }
 
     public void deleteProduct(Long id) {

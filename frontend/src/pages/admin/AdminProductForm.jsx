@@ -1,181 +1,178 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { toast } from 'react-toastify';
 import {
-    getAllCategories,
-    getProductById,
-    updateProduct,
-    createProduct
-} from '../../api/apiService';
-import Loader from '../../components/Loader';
+    TextField,
+    Button,
+    Select,
+    MenuItem,
+    InputLabel,
+    FormControl,
+    Checkbox,
+    FormControlLabel,
+} from '@mui/material';
+import ReactQuill from 'react-quill'; // Import react-quill
+import 'react-quill/dist/quill.snow.css'; // Import the styles
 
-const AdminProductForm = () => {
+const AdminProductForm = ({ onSubmit, initialData }) => {
+    // ... (keep the existing state and other code)
+
     const [product, setProduct] = useState({
         name: '',
-        description: '',
+        description: '', // This will now hold HTML content
         price: '',
         quantity: '',
-        categoryId: '',
+        category: '',
         brand: '',
         bestseller: false,
-        newArrival: false
+        newArrival: false,
     });
     const [images, setImages] = useState([]);
-    const [categories, setCategories] = useState([]);
-    const [isLoading, setIsLoading] = useState(true); // Start with loading true
-    const [error, setError] = useState('');
-    const navigate = useNavigate();
-    const { id } = useParams();
 
     useEffect(() => {
-        const fetchFormData = async () => {
-            try {
-                // Fetch categories
-                const categoriesResponse = await getAllCategories();
-                const categoriesArray = Array.isArray(categoriesResponse.data) ? categoriesResponse.data : categoriesResponse.data.content;
-                setCategories(categoriesArray || []);
-
-                // If editing, fetch the product
-                if (id) {
-                    const productResponse = await getProductById(id);
-                    // Ensure categoryId is set correctly for the select dropdown
-                    setProduct({ ...productResponse.data, categoryId: productResponse.data.category.id });
-                }
-            } catch (err) {
-                console.error('Failed to fetch form data:', err);
-                setError('Could not load required data. Please try again.');
-                toast.error('Could not load required data.');
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchFormData();
-    }, [id]);
+        if (initialData) {
+            setProduct({
+                name: initialData.name || '',
+                description: initialData.description || '',
+                price: initialData.price || '',
+                quantity: initialData.quantity || '',
+                category: initialData.category ? initialData.category.id : '',
+                brand: initialData.brand || '',
+                bestseller: initialData.bestseller || false,
+                newArrival: initialData.newArrival || false,
+            });
+        }
+    }, [initialData]);
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
-        setProduct(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+        setProduct((prev) => ({
+            ...prev,
+            [name]: type === 'checkbox' ? checked : value,
+        }));
+    };
+
+    // Add a new handler for the rich text editor
+    const handleDescriptionChange = (value) => {
+        setProduct((prev) => ({
+            ...prev,
+            description: value,
+        }));
     };
 
     const handleImageChange = (e) => {
         setImages(e.target.files);
     };
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = (e) => {
         e.preventDefault();
-        setIsLoading(true);
-
-        // Ensure numeric fields are correctly formatted
-        const productPayload = {
+        const formData = new FormData();
+        const productData = {
             ...product,
-            price: parseFloat(product.price),
-            quantity: parseInt(product.quantity, 10),
-            categoryId: parseInt(product.categoryId, 10),
+            categoryId: product.category, // Ensure categoryId is sent
         };
 
-        const formData = new FormData();
-        formData.append('product', new Blob([JSON.stringify(productPayload)], { type: "application/json" }));
+        // Remove the 'category' property as the backend expects 'categoryId'
+        delete productData.category;
+
+        formData.append('product', JSON.stringify(productData));
 
         for (let i = 0; i < images.length; i++) {
             formData.append('images', images[i]);
         }
-
-        try {
-            if (id) {
-                await updateProduct(id, formData);
-            } else {
-                await createProduct(formData);
-            }
-            toast.success(`Product ${id ? 'updated' : 'created'} successfully!`);
-            navigate('/admin/products');
-        } catch (error) {
-            toast.error(`Error ${id ? 'updating' : 'creating'} product.`);
-            console.error('Error:', error);
-        } finally {
-            setIsLoading(false);
-        }
+        onSubmit(formData);
     };
 
-    if (isLoading) {
-        return <Loader />;
-    }
-
-    if (error) {
-        return <p className="text-center text-red-500 py-10">{error}</p>;
-    }
-
     return (
-        <div className="container mx-auto p-4">
-            <h1 className="text-2xl font-bold mb-4">{id ? 'Edit Product' : 'Add Product'}</h1>
-            <form onSubmit={handleSubmit} className="space-y-4">
-                {/* Name */}
-                <div>
-                    <label className="block text-gray-700">Name</label>
-                    <input type="text" name="name" value={product.name} onChange={handleChange} className="w-full p-2 border rounded" required />
-                </div>
+        <form onSubmit={handleSubmit}>
+            {/* ... (keep the other form fields) */}
+            <TextField
+                label="Name"
+                name="name"
+                value={product.name}
+                onChange={handleChange}
+                fullWidth
+                margin="normal"
+            />
 
-                {/* Description */}
-                <div>
-                    <label className="block text-gray-700">Description</label>
-                    <textarea name="description" value={product.description} onChange={handleChange} className="w-full p-2 border rounded" rows="4" required></textarea>
-                </div>
+            {/* Replace the Description TextField with ReactQuill */}
+            <FormControl fullWidth margin="normal">
+                <label style={{ paddingBottom: '10px' }}>Description</label>
+                <ReactQuill
+                    theme="snow"
+                    value={product.description}
+                    onChange={handleDescriptionChange}
+                />
+            </FormControl>
 
-                {/* Price and Quantity */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label className="block text-gray-700">Price</label>
-                        <input type="number" name="price" value={product.price} onChange={handleChange} className="w-full p-2 border rounded" step="0.01" required />
-                    </div>
-                    <div>
-                        <label className="block text-gray-700">Quantity</label>
-                        <input type="number" name="quantity" value={product.quantity} onChange={handleChange} className="w-full p-2 border rounded" required />
-                    </div>
-                </div>
-
-                {/* Category and Brand */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label className="block text-gray-700">Category</label>
-                        <select name="categoryId" value={product.categoryId} onChange={handleChange} className="w-full p-2 border rounded" required>
-                            <option value="">Select a Category</option>
-                            {categories.map((category) => (
-                                <option key={category.id} value={category.id}>
-                                    {category.name}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                    <div>
-                        <label className="block text-gray-700">Brand</label>
-                        <input type="text" name="brand" value={product.brand} onChange={handleChange} className="w-full p-2 border rounded" required />
-                    </div>
-                </div>
-
-                {/* Checkboxes */}
-                <div className="flex items-center gap-8">
-                    <label className="flex items-center">
-                        <input type="checkbox" name="bestseller" checked={product.bestseller} onChange={handleChange} className="h-4 w-4" />
-                        <span className="ml-2">Bestseller</span>
-                    </label>
-                    <label className="flex items-center">
-                        <input type="checkbox" name="newArrival" checked={product.newArrival} onChange={handleChange} className="h-4 w-4" />
-                        <span className="ml-2">New Arrival</span>
-                    </label>
-                </div>
-
-                {/* Image Upload */}
-                <div>
-                    <label className="block text-gray-700">Images</label>
-                    <input type="file" name="images" onChange={handleImageChange} multiple className="w-full p-2 border rounded" />
-                </div>
-
-                {/* Submit Button */}
-                <button type="submit" className="bg-blue-500 text-white p-2 rounded" disabled={isLoading}>
-                    {isLoading ? 'Saving...' : (id ? 'Update Product' : 'Add Product')}
-                </button>
-            </form>
-        </div>
+            <TextField
+                label="Price"
+                name="price"
+                type="number"
+                value={product.price}
+                onChange={handleChange}
+                fullWidth
+                margin="normal"
+            />
+            {/* ... (keep the rest of the form) */}
+            <TextField
+                label="Quantity"
+                name="quantity"
+                type="number"
+                value={product.quantity}
+                onChange={handleChange}
+                fullWidth
+                margin="normal"
+            />
+            <FormControl fullWidth margin="normal">
+                <InputLabel>Category</InputLabel>
+                <Select
+                    name="category"
+                    value={product.category}
+                    onChange={handleChange}
+                    label="Category"
+                >
+                    {/* You should populate this with your actual categories */}
+                    <MenuItem value="makeup">Makeup</MenuItem>
+                    <MenuItem value="skincare">Skincare</MenuItem>
+                </Select>
+            </FormControl>
+            <TextField
+                label="Brand"
+                name="brand"
+                value={product.brand}
+                onChange={handleChange}
+                fullWidth
+                margin="normal"
+            />
+            <FormControlLabel
+                control={
+                    <Checkbox
+                        name="bestseller"
+                        checked={product.bestseller}
+                        onChange={handleChange}
+                    />
+                }
+                label="Bestseller"
+            />
+            <FormControlLabel
+                control={
+                    <Checkbox
+                        name="newArrival"
+                        checked={product.newArrival}
+                        onChange={handleChange}
+                    />
+                }
+                label="New Arrival"
+            />
+            <input
+                type="file"
+                multiple
+                onChange={handleImageChange}
+                style={{ margin: '20px 0' }}
+            />
+            <Button type="submit" variant="contained" color="primary">
+                {initialData ? 'Update Product' : 'Add Product'}
+            </Button>
+        </form>
     );
 };
 
