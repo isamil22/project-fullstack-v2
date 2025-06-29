@@ -18,7 +18,10 @@ const AdminDashboard = () => {
                     getPendingReviews()
                 ]);
 
-                setProducts(productsResponse.data.content || productsResponse.data);
+                // FIX: Use a more robust check to ensure 'products' is always an array.
+                const productsArray = Array.isArray(productsResponse.data) ? productsResponse.data : productsResponse.data.content;
+                setProducts(productsArray || []);
+
                 setOrders(ordersResponse.data);
                 setPendingReviews(reviewsResponse.data);
             } catch (err) {
