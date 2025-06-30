@@ -11,7 +11,9 @@ const AdminOrdersPage = () => {
     const fetchOrders = async () => {
         try {
             const response = await getAllOrders();
-            setOrders(response);
+            // The fix is to use response.data, which contains the array of orders
+            const ordersArray = Array.isArray(response.data) ? response.data : [];
+            setOrders(ordersArray);
         } catch (err) {
             setError('Failed to fetch orders. Please try again.');
             console.error(err);
@@ -29,10 +31,10 @@ const AdminOrdersPage = () => {
         setSuccess('');
         try {
             await updateOrderStatus(orderId, newStatus);
-            setSuccess(`Order ${orderId} status updated successfully.`);
+            setSuccess(`Order #${orderId} status updated successfully.`);
             fetchOrders(); // Refresh the list of orders
         } catch (err) {
-            setError(`Failed to update status for order ${orderId}.`);
+            setError(`Failed to update status for order #${orderId}.`);
             console.error(err);
         }
     };
@@ -52,7 +54,6 @@ const AdminOrdersPage = () => {
                     <tr>
                         <th className="py-2 px-4 border-b text-left">Order ID</th>
                         <th className="py-2 px-4 border-b text-left">Customer</th>
-                        <th className="py-2 px-4 border-b text-left">Total</th>
                         <th className="py-2 px-4 border-b text-left">Status</th>
                         <th className="py-2 px-4 border-b text-left">Date</th>
                         <th className="py-2 px-4 border-b text-left">Actions</th>
@@ -62,8 +63,8 @@ const AdminOrdersPage = () => {
                     {orders.map(order => (
                         <tr key={order.id}>
                             <td className="py-2 px-4 border-b">{order.id}</td>
-                            <td className="py-2 px-4 border-b">{order.user.username}</td>
-                            <td className="py-2 px-4 border-b">${order.total.toFixed(2)}</td>
+                            {/* Assuming the user object is directly on the order */}
+                            <td className="py-2 px-4 border-b">{order.user ? order.user.username : 'N/A'}</td>
                             <td className="py-2 px-4 border-b">{order.status}</td>
                             <td className="py-2 px-4 border-b">{new Date(order.createdAt).toLocaleDateString()}</td>
                             <td className="py-2 px-4 border-b">
@@ -72,10 +73,10 @@ const AdminOrdersPage = () => {
                                     onChange={(e) => handleStatusChange(order.id, e.target.value)}
                                     className="p-2 border rounded-md"
                                 >
-                                    <option value="pending">Pending</option>
-                                    <option value="shipped">Shipped</option>
-                                    <option value="delivered">Delivered</option>
-                                    <option value="cancelled">Cancelled</option>
+                                    <option value="PREPARING">Preparing</option>
+                                    <option value="DELIVERING">Delivering</option>
+                                    <option value="DELIVERED">Delivered</option>
+                                    <option value="CANCELED">Canceled</option>
                                 </select>
                             </td>
                         </tr>
