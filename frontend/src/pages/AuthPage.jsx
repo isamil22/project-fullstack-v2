@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { loginUser, registerUser, getUserProfile } from '../api/apiService';
 
 const AuthPage = ({ setIsAuthenticated }) => {
@@ -112,6 +112,15 @@ const AuthPage = ({ setIsAuthenticated }) => {
                                 value={formData.password}
                                 onChange={handleChange}
                             />
+                        </div>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                        <div className="text-sm">
+                            <Link to="/forgot-password"
+                                  className="font-medium text-pink-600 hover:text-pink-500">
+                                Forgot your password?
+                            </Link>
                         </div>
                     </div>
 

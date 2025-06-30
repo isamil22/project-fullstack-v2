@@ -185,3 +185,12 @@ export const updateHero = (formData) => {
 export const addComment = (productId, commentData) => {
     return apiService.post(`/comments/product/${productId}`, commentData);
 };
+
+// --- NEW FORGOT PASSWORD FUNCTIONS ---
+export const forgotPassword = (email) => {
+    return apiService.post('/auth/forgot-password', { email });
+};
+
+export const resetPassword = (token, newPassword) => {
+    return apiService.post('/auth/reset-password', { token, newPassword });
+};
