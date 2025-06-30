@@ -180,3 +180,8 @@ export const updateHero = (formData) => {
         headers: { 'Content-Type': 'multipart/form-data' },
     });
 };
+
+// --- Comment Functions ---
+export const addComment = (productId, commentData) => {
+    return apiService.post(`/comments/product/${productId}`, commentData);
+};
