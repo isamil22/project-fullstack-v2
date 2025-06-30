@@ -10,7 +10,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.time.LocalDateTime;
+import java.time.LocalDateTime; // <-- IMPORT THIS
 import java.util.Collection;
 import java.util.List;
 
@@ -29,6 +29,7 @@ public class User implements UserDetails {
 
     @NotBlank
     @Email
+    @Column(unique = true) // <-- CORRECT: Ensures no duplicate emails in the database.
     private String email;
 
     @NotBlank
@@ -37,15 +38,17 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    // IMPROVEMENT: Added orphanRemoval=true to ensure the cart is deleted if the user is.
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Cart cart;
 
     private boolean emailConfirmation;
     private String confirmationCode;
 
-    // Add these two fields
+    // --- CORRECT: Added missing fields for Password Reset ---
     private String resetPasswordToken;
     private LocalDateTime resetPasswordTokenExpiry;
+    // ----------------------------------------------------
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

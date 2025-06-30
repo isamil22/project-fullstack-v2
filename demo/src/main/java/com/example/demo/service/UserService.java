@@ -5,7 +5,11 @@ import com.example.demo.dto.UserDTO;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.mapper.UserMapper;
 import com.example.demo.model.User;
+import com.example.demo.repositories.CommentRepository;
+import com.example.demo.repositories.OrderRepository;
+import com.example.demo.repositories.ReviewRepository;
 import com.example.demo.repositories.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -24,6 +28,12 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
     private final UserMapper userMapper;
+
+    // --- CORRECT: Injected repositories to handle dependent data ---
+    private final OrderRepository orderRepository;
+    private final CommentRepository commentRepository;
+    private final ReviewRepository reviewRepository;
+    // -----------------------------------------------------------------
 
     @Value("${frontend.url}")
     private String frontendUrl;
@@ -81,10 +91,27 @@ public class UserService {
         return userMapper.toDTOs(userRepository.findAll());
     }
 
+    /**
+     * Deletes a user and all of their associated data (orders, comments, reviews).
+     * The cart is deleted automatically thanks to the CascadeType.ALL setting.
+     * The @Transactional annotation ensures that if any part of this process fails,
+     * the entire operation is rolled back, preventing partial data deletion.
+     */
+    @Transactional
     public void deleteUser(Long id) {
+        // First, check if the user exists
         if (!userRepository.existsById(id)) {
             throw new ResourceNotFoundException("User not found with id: " + id);
         }
+
+        // --- CORRECT: Delete all dependent entities before deleting the user ---
+        // NOTE: You must ensure findByUserId methods exist in these repositories.
+        orderRepository.deleteAll(orderRepository.findByUserId(id));
+        commentRepository.deleteAll(commentRepository.findByUserId(id));
+        reviewRepository.deleteAll(reviewRepository.findByUserId(id));
+        // --------------------------------------------------------------------
+
+        // Finally, delete the user. The associated cart will be deleted automatically.
         userRepository.deleteById(id);
     }
 
