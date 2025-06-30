@@ -9,7 +9,7 @@ export default defineConfig({
     proxy: {
       // Any request starting with /api will be forwarded
       '/api': {
-        target: 'http://localhost:8080', // Your Spring Boot backend
+        target: 'http://localhost:8082', // MODIFIED: Changed port to match docker-compose
         changeOrigin: true,
       },
     },

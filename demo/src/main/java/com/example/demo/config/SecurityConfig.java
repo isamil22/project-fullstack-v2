@@ -49,9 +49,14 @@ public class SecurityConfig {
                                 "/api/auth/forgot-password",
                                 "/api/auth/reset-password")
                         .permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/products/**", "/api/categories/**", "/api/reviews/approved", "/api/hero").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/comments/product/**").permitAll()
-                        .requestMatchers("/", "/index.html", "/images/**").permitAll()
+                        .requestMatchers(HttpMethod.GET,
+                                "/api/products/**",
+                                "/api/categories/**",
+                                "/api/reviews/approved",
+                                "/api/hero",
+                                "/api/comments/product/**")
+                        .permitAll()
+                        .requestMatchers("/", "/index.html", "/images/**", "/vite.svg").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
