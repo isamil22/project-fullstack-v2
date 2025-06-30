@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 public class EmailService {
     private final JavaMailSender mailSender;
 
-    @Value("spring.mail.username")
+    @Value("${spring.mail.username}")
     private String fromEmail;
 
     public void sendOrderConfirmation(Order order){
@@ -31,6 +31,15 @@ public class EmailService {
         message.setTo(user.getEmail());
         message.setSubject("Confirm your email");
         message.setText("Please confirm your email by entering this code " + user.getConfirmationCode());
+        mailSender.send(message);
+    }
+
+    public void sendPasswordResetEmail(User user, String resetLink) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom(fromEmail);
+        message.setTo(user.getEmail());
+        message.setSubject("Password Reset Request");
+        message.setText("To reset your password, please click the link below:\n" + resetLink);
         mailSender.send(message);
     }
 }

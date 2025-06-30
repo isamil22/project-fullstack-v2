@@ -7,7 +7,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -39,21 +38,20 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .cors(withDefaults()) // Apply CORS settings from the corsConfigurationSource bean
-                .csrf(csrf -> csrf.disable()) // Disable CSRF as we are using a stateless JWT-based API
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Ensure the API is stateless
+                .cors(withDefaults())
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // --- PUBLIC ENDPOINTS ---
-                        // Allow all auth-related POST requests for login and registration
-                        .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/register", "/api/auth/confirm-email").permitAll()
-                        // Allow all GET requests for public data fetching
+                        .requestMatchers(HttpMethod.POST,
+                                "/api/auth/login",
+                                "/api/auth/register",
+                                "/api/auth/confirm-email",
+                                "/api/auth/forgot-password",
+                                "/api/auth/reset-password")
+                        .permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/products/**", "/api/categories/**", "/api/reviews/approved", "/api/hero").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/comments/product/**").permitAll()
-                        // Allow access to static resources if any are served from root
                         .requestMatchers("/", "/index.html", "/images/**").permitAll()
-
-                        // --- PROTECTED ENDPOINTS ---
-                        // All other requests must be authenticated
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
@@ -64,8 +62,7 @@ public class SecurityConfig {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // The origin of your React development server and the Dockerized frontend
-        configuration.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:8081"));
+        configuration.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:8081", "http://localhost:3000"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         configuration.setAllowCredentials(true);
@@ -92,12 +89,5 @@ public class SecurityConfig {
     public UserDetailsService userDetailsService(){
         return username -> (UserDetails) userRepository.findByEmail(username)
                 .orElseThrow(()-> new UsernameNotFoundException("User not found"));
-    }
-    @Bean
-    public DaoAuthenticationProvider authenticationProvider(){
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(userDetailsService());
-        authProvider.setPasswordEncoder(passwordEncoder());
-        return authProvider;
     }
 }

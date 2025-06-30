@@ -1,9 +1,6 @@
 package com.example.demo.controller;
 
-import com.example.demo.dto.ChangePasswordRequest;
-import com.example.demo.dto.EmailConfirmationRequest;
-import com.example.demo.dto.LoginRequest;
-import com.example.demo.dto.UserDTO;
+import com.example.demo.dto.*;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.mapper.UserMapper;
 import com.example.demo.model.User;
@@ -63,6 +60,18 @@ public class AuthController {
         catch (ResourceNotFoundException e){
             return ResponseEntity.notFound().build();
         }
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<String> forgotPassword(@RequestBody ForgotPasswordRequest request) {
+        userService.forgotPassword(request.getEmail());
+        return ResponseEntity.ok("Password reset link sent to your email.");
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<String> resetPassword(@RequestBody ResetPasswordRequest request) {
+        userService.resetPassword(request.getToken(), request.getNewPassword());
+        return ResponseEntity.ok("Password reset successfully.");
     }
 
     @GetMapping("/user/role")

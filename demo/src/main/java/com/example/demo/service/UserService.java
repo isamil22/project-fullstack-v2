@@ -7,12 +7,15 @@ import com.example.demo.mapper.UserMapper;
 import com.example.demo.model.User;
 import com.example.demo.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -20,7 +23,10 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
-    private final UserMapper userMapper; // Add this
+    private final UserMapper userMapper;
+
+    @Value("${frontend.url}")
+    private String frontendUrl;
 
     public User registerUser(User user){
         if(userRepository.findByEmail(user.getEmail()).isPresent()) {
@@ -71,7 +77,6 @@ public class UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
     }
 
-    // New methods for admin
     public List<UserDTO> getAllUsers() {
         return userMapper.toDTOs(userRepository.findAll());
     }
@@ -88,5 +93,29 @@ public class UserService {
         user.setRole(role);
         User updatedUser = userRepository.save(user);
         return userMapper.toDTO(updatedUser);
+    }
+
+    public void forgotPassword(String email) {
+        User user = getUserByEmail(email);
+        String token = UUID.randomUUID().toString();
+        user.setResetPasswordToken(token);
+        user.setResetPasswordTokenExpiry(LocalDateTime.now().plusHours(1)); // Token is valid for 1 hour
+        userRepository.save(user);
+        String resetLink = frontendUrl + "/reset-password/" + token;
+        emailService.sendPasswordResetEmail(user, resetLink);
+    }
+
+    public void resetPassword(String token, String newPassword) {
+        User user = userRepository.findByResetPasswordToken(token)
+                .orElseThrow(() -> new ResourceNotFoundException("Invalid password reset token"));
+
+        if (user.getResetPasswordTokenExpiry().isBefore(LocalDateTime.now())) {
+            throw new BadCredentialsException("Password reset token has expired");
+        }
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setResetPasswordToken(null);
+        user.setResetPasswordTokenExpiry(null);
+        userRepository.save(user);
     }
 }

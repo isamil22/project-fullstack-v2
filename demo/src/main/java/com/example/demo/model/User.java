@@ -1,4 +1,3 @@
-
 package com.example.demo.model;
 
 import jakarta.persistence.*;
@@ -11,6 +10,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
@@ -24,7 +24,7 @@ public class User implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "Full name is required") // Added validation
+    @NotBlank(message = "Full name is required")
     private String fullName;
 
     @NotBlank
@@ -42,6 +42,10 @@ public class User implements UserDetails {
 
     private boolean emailConfirmation;
     private String confirmationCode;
+
+    // Add these two fields
+    private String resetPasswordToken;
+    private LocalDateTime resetPasswordTokenExpiry;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
