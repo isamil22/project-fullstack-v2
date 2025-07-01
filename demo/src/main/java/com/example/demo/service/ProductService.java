@@ -3,17 +3,21 @@ package com.example.demo.service;
 import com.example.demo.dto.ProductDTO;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.mapper.ProductMapper;
-import com.example.demo.model.Category; // Import Category
+import com.example.demo.model.Category;
 import com.example.demo.model.Product;
-import com.example.demo.repositories.CategoryRepository; // Import CategoryRepository
+import com.example.demo.repositories.CategoryRepository;
 import com.example.demo.repositories.ProductRepository;
-import jakarta.transaction.Transactional; // Import Transactional
+import com.example.demo.specification.ProductSpecification;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,7 +29,7 @@ public class ProductService {
     private ProductRepository productRepository;
 
     @Autowired
-    private CategoryRepository categoryRepository; // Inject CategoryRepository
+    private CategoryRepository categoryRepository;
 
     @Autowired
     private S3Service s3Service;
@@ -33,7 +37,9 @@ public class ProductService {
     @Autowired
     private ProductMapper productMapper;
 
-    // NEW METHOD: Creates a product and uploads images in one go.
+    @Autowired
+    private ProductSpecification productSpecification;
+
     @Transactional
     public ProductDTO createProductWithImages(ProductDTO productDTO, List<MultipartFile> images) throws IOException {
         Product product = productMapper.toEntity(productDTO);
@@ -42,7 +48,6 @@ public class ProductService {
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found with ID: " + productDTO.getCategoryId()));
         product.setCategory(category);
 
-        // Handle images
         if (images != null && !images.isEmpty()) {
             List<String> imageUrls = uploadAndGetImageUrls(images);
             product.setImages(imageUrls);
@@ -54,13 +59,11 @@ public class ProductService {
         return productMapper.toDTO(savedProduct);
     }
 
-    // NEW METHOD: Updates a product and its images.
     @Transactional
     public ProductDTO updateProductWithImages(Long id, ProductDTO productDTO, List<MultipartFile> images) throws IOException {
         Product existingProduct = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
 
-        // Update fields from DTO
         existingProduct.setName(productDTO.getName());
         existingProduct.setDescription(productDTO.getDescription());
         existingProduct.setPrice(productDTO.getPrice());
@@ -75,11 +78,9 @@ public class ProductService {
             existingProduct.setCategory(category);
         }
 
-        // Handle new images if they are provided
         if (images != null && !images.isEmpty()) {
             List<String> imageUrls = uploadAndGetImageUrls(images);
-            // Here you can decide whether to add to or replace existing images
-            existingProduct.getImages().clear(); // Example: replacing all images
+            existingProduct.getImages().clear();
             existingProduct.getImages().addAll(imageUrls);
         }
 
@@ -87,7 +88,6 @@ public class ProductService {
         return productMapper.toDTO(updatedProduct);
     }
 
-    // Helper method to reduce code duplication
     private List<String> uploadAndGetImageUrls(List<MultipartFile> images) {
         return images.stream()
                 .map(image -> {
@@ -100,11 +100,14 @@ public class ProductService {
                 .collect(Collectors.toList());
     }
 
-    // --- The rest of your service methods ---
-    public List<ProductDTO> getAllProducts() {
-        return productRepository.findAll().stream()
-                .map(productMapper::toDTO)
-                .collect(Collectors.toList());
+    /**
+     * UPDATED: Fetches products based on filter criteria using Specification
+     * and returns a paginated result.
+     */
+    public Page<ProductDTO> getAllProducts(String search, Long categoryId, BigDecimal minPrice, BigDecimal maxPrice, String brand, Boolean bestseller, Boolean newArrival, Pageable pageable) {
+        Specification<Product> spec = productSpecification.getProducts(search, minPrice, maxPrice, brand, bestseller, newArrival, categoryId);
+        return productRepository.findAll(spec, pageable)
+                .map(productMapper::toDTO);
     }
 
     public List<ProductDTO> getBestsellers() {

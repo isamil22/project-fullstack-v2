@@ -15,7 +15,6 @@ const ProductsPage = () => {
         search: searchParams.get('search') || '',
         category: searchParams.get('category') || 'all',
         minPrice: searchParams.get('minPrice') || '',
-        // THE FIX IS ON THE NEXT LINE: Changed search_params to searchParams
         maxPrice: searchParams.get('maxPrice') || '',
         sort: searchParams.get('sort') || 'name,asc',
     });
@@ -33,14 +32,18 @@ const ProductsPage = () => {
             try {
                 const params = new URLSearchParams();
                 if (filters.search) params.append('search', filters.search);
-                if (filters.category && filters.category !== 'all') params.append('category', filters.category);
+                // UPDATED: Sends 'categoryId' instead of 'category'
+                if (filters.category && filters.category !== 'all') {
+                    params.append('categoryId', filters.category);
+                }
                 if (filters.minPrice) params.append('minPrice', filters.minPrice);
                 if (filters.maxPrice) params.append('maxPrice', filters.maxPrice);
                 params.append('sort', filters.sort);
 
                 const response = await getAllProducts(params);
-                const productsArray = Array.isArray(response.data) ? response.data : response.data.content;
-                setProducts(productsArray || []);
+                // UPDATED: Handles the paginated response from the backend
+                const productsArray = response.data.content || [];
+                setProducts(productsArray);
             } catch (err) {
                 console.error("Failed to fetch products:", err);
                 setError("Could not load products. Please try again.");
@@ -49,7 +52,6 @@ const ProductsPage = () => {
             }
         };
 
-        // Debounce to prevent rapid API calls while typing in filters
         const timerId = setTimeout(() => {
             fetchProducts();
         }, 500);
@@ -62,7 +64,6 @@ const ProductsPage = () => {
         const newFilters = { ...filters, [name]: value };
         setFilters(newFilters);
 
-        // Update URL search params as filters change
         const currentParams = new URLSearchParams(searchParams);
         Object.keys(newFilters).forEach(key => {
             currentParams.set(key, newFilters[key]);
@@ -74,7 +75,7 @@ const ProductsPage = () => {
         <div className="container mx-auto px-4 py-8">
             <h1 className="text-4xl font-extrabold text-center mb-10 text-gray-800">Our Products</h1>
 
-            {/* Filter controls can go here */}
+            {/* You can add your filter UI elements here, using handleFilterChange */}
 
             {error && <p className="text-center text-red-500 py-10">{error}</p>}
 
