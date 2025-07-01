@@ -35,6 +35,12 @@ export const loginUser = (credentials) => {
     return apiService.post('/auth/login', credentials);
 };
 
+// --- NEW EMAIL CONFIRMATION FUNCTION ---
+export const confirmEmail = (confirmationData) => {
+    return apiService.post('/auth/confirm-email', confirmationData);
+};
+// -----------------------------------------
+
 export const logoutUser = () => {
     localStorage.removeItem('token');
 };

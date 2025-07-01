@@ -18,8 +18,9 @@ import AdminOrdersPage from './pages/admin/AdminOrdersPage.jsx';
 import AdminUsersPage from './pages/admin/AdminUsersPage.jsx';
 import AdminReviewsPage from './pages/admin/AdminReviewsPage.jsx';
 import { getUserProfile } from './api/apiService.js';
-import ForgotPasswordPage from './pages/ForgotPasswordPage.jsx'; // Import the new page
-import ResetPasswordPage from './pages/ResetPasswordPage.jsx'; // Import the new page
+import ForgotPasswordPage from './pages/ForgotPasswordPage.jsx';
+import ResetPasswordPage from './pages/ResetPasswordPage.jsx';
+import EmailConfirmationPage from './pages/EmailConfirmationPage.jsx';
 
 import ContactPage from './pages/ContactPage.jsx';
 import FaqPage from './pages/FaqPage.jsx';
@@ -76,6 +77,7 @@ function App() {
                         />
                         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                         <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+                        <Route path="/confirm-email" element={<EmailConfirmationPage />} /> {/* Add this route */}
                         <Route path="/contact" element={<ContactPage />} />
                         <Route path="/faq" element={<FaqPage />} />
                         <Route path="/shipping" element={<ShippingPage />} />
