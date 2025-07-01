@@ -1,3 +1,4 @@
+// frontend/src/App.jsx
 import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar.jsx';
@@ -77,7 +78,7 @@ function App() {
                         />
                         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                         <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
-                        <Route path="/confirm-email" element={<EmailConfirmationPage />} /> {/* Add this route */}
+                        <Route path="/confirm-email/:email" element={<EmailConfirmationPage />} />
                         <Route path="/contact" element={<ContactPage />} />
                         <Route path="/faq" element={<FaqPage />} />
                         <Route path="/shipping" element={<ShippingPage />} />

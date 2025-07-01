@@ -41,17 +41,12 @@ const AuthPage = ({ setIsAuthenticated }) => {
                 }
             } else {
                 await registerUser(formData);
-                // **** MODIFICATION START ****
-                // Change the success message to guide the user to email confirmation.
-                setSuccess('Registration successful! Please check your email for a confirmation code.');
-                // Do not switch to the login form automatically. Let the user see the message.
-                // setIsLogin(true);
-                // **** MODIFICATION END ****
+                setSuccess('Registration successful! Redirecting to email confirmation...');
+                navigate(`/confirm-email/${formData.email}`);
             }
         } catch (err) {
-            // Check for the specific "User is disabled" error on login
             const errorMessage = err.response?.data?.message || err.response?.data || 'An error occurred. Please try again.';
-            if (isLogin && err.response?.status === 403) { // Or whatever status your backend sends for disabled users
+            if (isLogin && err.response?.status === 403) {
                 setError('User is disabled. Please confirm your email address.');
             } else {
                 setError(errorMessage);
@@ -123,22 +118,13 @@ const AuthPage = ({ setIsAuthenticated }) => {
                         </div>
                     </div>
 
-                    <div className="flex items-center justify-between">
-                        {/* **** MODIFICATION START **** */}
-                        {/* Add a link to the email confirmation page */}
-                        <div className="text-sm">
-                            <Link to="/confirm-email"
-                                  className="font-medium text-pink-600 hover:text-pink-500">
-                                Already have a code? Confirm email
-                            </Link>
-                        </div>
+                    <div className="flex items-center justify-end">
                         <div className="text-sm">
                             <Link to="/forgot-password"
                                   className="font-medium text-pink-600 hover:text-pink-500">
                                 Forgot your password?
                             </Link>
                         </div>
-                        {/* **** MODIFICATION END **** */}
                     </div>
 
                     {error && <p className="text-red-600 text-sm text-center font-medium">{error}</p>}
