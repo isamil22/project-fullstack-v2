@@ -1,13 +1,13 @@
 import { useState } from 'react';
-import { useHistory } from 'react-router-dom';
-import { confirmEmail } from '../api/apiService.js'; // You'll create this next
+import { useNavigate } from 'react-router-dom'; // Changed from useHistory
+import { confirmEmail } from '../api/apiService.js';
 
 const EmailConfirmationPage = () => {
     const [email, setEmail] = useState('');
     const [confirmationCode, setConfirmationCode] = useState('');
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
-    const history = useHistory();
+    const navigate = useNavigate(); // Changed from useHistory
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -18,7 +18,7 @@ const EmailConfirmationPage = () => {
             await confirmEmail({ email, confirmationCode });
             setSuccess('Email confirmed successfully! You will be redirected to the login page.');
             setTimeout(() => {
-                history.push('/auth');
+                navigate('/auth'); // Changed from history.push
             }, 3000);
         } catch (err) {
             setError('Invalid email or confirmation code. Please try again.');

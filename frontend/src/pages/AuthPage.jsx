@@ -1,10 +1,11 @@
+// frontend/src/pages/AuthPage.jsx
+
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { loginUser, registerUser, getUserProfile } from '../api/apiService';
 
 const AuthPage = ({ setIsAuthenticated }) => {
     const [isLogin, setIsLogin] = useState(true);
-    // Add fullName to state
     const [formData, setFormData] = useState({ fullName: '', email: '', password: '' });
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
@@ -39,14 +40,22 @@ const AuthPage = ({ setIsAuthenticated }) => {
                     navigate('/');
                 }
             } else {
-                // Pass the full form data for registration
                 await registerUser(formData);
-                setSuccess('Registration successful! You can now log in.');
-                setIsLogin(true);
+                // **** MODIFICATION START ****
+                // Change the success message to guide the user to email confirmation.
+                setSuccess('Registration successful! Please check your email for a confirmation code.');
+                // Do not switch to the login form automatically. Let the user see the message.
+                // setIsLogin(true);
+                // **** MODIFICATION END ****
             }
         } catch (err) {
+            // Check for the specific "User is disabled" error on login
             const errorMessage = err.response?.data?.message || err.response?.data || 'An error occurred. Please try again.';
-            setError(errorMessage);
+            if (isLogin && err.response?.status === 403) { // Or whatever status your backend sends for disabled users
+                setError('User is disabled. Please confirm your email address.');
+            } else {
+                setError(errorMessage);
+            }
             setIsAuthenticated(false);
         }
     };
@@ -68,7 +77,6 @@ const AuthPage = ({ setIsAuthenticated }) => {
                 </div>
                 <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
                     <div className="rounded-md shadow-sm">
-                        {/* Full Name Input - shows only on registration */}
                         {!isLogin && (
                             <div className="mb-2">
                                 <label htmlFor="full-name" className="sr-only">Full name</label>
@@ -116,12 +124,21 @@ const AuthPage = ({ setIsAuthenticated }) => {
                     </div>
 
                     <div className="flex items-center justify-between">
+                        {/* **** MODIFICATION START **** */}
+                        {/* Add a link to the email confirmation page */}
+                        <div className="text-sm">
+                            <Link to="/confirm-email"
+                                  className="font-medium text-pink-600 hover:text-pink-500">
+                                Already have a code? Confirm email
+                            </Link>
+                        </div>
                         <div className="text-sm">
                             <Link to="/forgot-password"
                                   className="font-medium text-pink-600 hover:text-pink-500">
                                 Forgot your password?
                             </Link>
                         </div>
+                        {/* **** MODIFICATION END **** */}
                     </div>
 
                     {error && <p className="text-red-600 text-sm text-center font-medium">{error}</p>}
