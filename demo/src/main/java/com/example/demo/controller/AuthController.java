@@ -6,8 +6,11 @@ import com.example.demo.mapper.UserMapper;
 import com.example.demo.model.User;
 import com.example.demo.service.JwtService;
 import com.example.demo.service.UserService;
-import jakarta.validation.Valid; // Keep this for other methods
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -17,12 +20,14 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map; // <-- Import Map
 
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
+    // --- ADD LOGGER ---
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
+
     private final AuthenticationManager authenticationManager;
     private final UserService userService;
     private final JwtService jwtService;
@@ -38,18 +43,21 @@ public class AuthController {
         return ResponseEntity.ok(jwt);
     }
 
-    // --- MODIFIED METHOD ---
+    // --- REPLACED METHOD with Logging & try-catch ---
     @PostMapping("/register")
-    public ResponseEntity<User> register(@RequestBody Map<String, String> payload) {
-        // Manually create the User object from the incoming data
-        User user = new User();
-        user.setFullName(payload.get("fullName"));
-        user.setEmail(payload.get("email"));
-        user.setPassword(payload.get("password"));
-
-        // Call the user service with the newly created object
-        User registeredUser = userService.registerUser(user);
-        return ResponseEntity.ok(registeredUser);
+    public ResponseEntity<?> register(@RequestBody User user) {
+        logger.info("--- TRIGGERED /api/auth/register ENDPOINT ---");
+        try {
+            logger.info("Attempting to register user with email: {}", user.getEmail());
+            User registeredUser = userService.registerUser(user);
+            logger.info("Successfully processed registration for user: {}", registeredUser.getEmail());
+            return ResponseEntity.ok(registeredUser);
+        } catch (Exception e) {
+            // This block will now catch any exception and log it with details
+            logger.error("!!! CRITICAL ERROR IN /api/auth/register !!!", e);
+            // It will also return a detailed error message in the response body
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error in AuthController: " + e.getMessage());
+        }
     }
 
     @PostMapping("/change-password")
