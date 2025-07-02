@@ -31,11 +31,20 @@ public class UserService {
     private final OrderRepository orderRepository;
     private final CommentRepository commentRepository;
     private final ReviewRepository reviewRepository;
+    // --- NEW CHANGE FOR RECAPTCHA ---
+    private final RecaptchaService recaptchaService;
+    // ----------------------------------
 
     @Value("${frontend.url}")
     private String frontendUrl;
 
+    // --- UPDATED METHOD ---
     public User registerUser(User user){
+        // Add reCAPTCHA validation at the beginning
+        if (!recaptchaService.validateRecaptcha(user.getRecaptchaToken())) {
+            throw new BadCredentialsException("reCAPTCHA validation failed. Please try again.");
+        }
+
         if(userRepository.findByEmail(user.getEmail()).isPresent()) {
             throw new IllegalStateException("Email already taken");
         }
@@ -46,6 +55,7 @@ public class UserService {
         emailService.sendConfirmationCode(user);
         return userRepository.save(user);
     }
+    // ----------------------
 
     public User getUserByEmail(String email){
         return userRepository.findByEmail(email).orElseThrow(()-> new ResourceNotFoundException("User not found"));
