@@ -18,7 +18,7 @@ import AdminProductForm from './pages/admin/AdminProductForm.jsx';
 import AdminOrdersPage from './pages/admin/AdminOrdersPage.jsx';
 import AdminUsersPage from './pages/admin/AdminUsersPage.jsx';
 import AdminReviewsPage from './pages/admin/AdminReviewsPage.jsx';
-import { getUserProfile } from './api/apiService.js';
+import { getCart, getUserProfile } from './api/apiService.js';
 import ForgotPasswordPage from './pages/ForgotPasswordPage.jsx';
 import ResetPasswordPage from './pages/ResetPasswordPage.jsx';
 import EmailConfirmationPage from './pages/EmailConfirmationPage.jsx';
@@ -34,12 +34,31 @@ import AdminHeroPage from './pages/admin/AdminHeroPage.jsx';
 function App() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [userRole, setUserRole] = useState(null);
+    const [cartCount, setCartCount] = useState(0);
+
+    const fetchCartCount = async () => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            try {
+                const response = await getCart();
+                const items = response.data?.items || [];
+                const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
+                setCartCount(totalItems);
+            } catch (error) {
+                console.error("Failed to fetch cart for count:", error);
+                setCartCount(0);
+            }
+        } else {
+            setCartCount(0);
+        }
+    };
 
     useEffect(() => {
         const checkAuthAndFetchRole = async () => {
             const token = localStorage.getItem('token');
             if (token) {
                 setIsAuthenticated(true);
+                fetchCartCount(); // Fetch cart count on auth check
                 try {
                     const response = await getUserProfile();
                     setUserRole(response.data.role);
@@ -64,13 +83,13 @@ function App() {
     return (
         <BrowserRouter>
             <div className="flex flex-col min-h-screen">
-                <Navbar isAuthenticated={isAuthenticated} setIsAuthenticated={handleSetIsAuthenticated} userRole={userRole} />
+                <Navbar isAuthenticated={isAuthenticated} setIsAuthenticated={handleSetIsAuthenticated} userRole={userRole} cartCount={cartCount} />
                 <main className="flex-grow">
                     <Routes>
                         {/* --- Public Routes --- */}
                         <Route path="/" element={<HomePage />} />
                         <Route path="/products" element={<ProductsPage />} />
-                        <Route path="/products/:id" element={<ProductDetailPage />} />
+                        <Route path="/products/:id" element={<ProductDetailPage fetchCartCount={fetchCartCount} />} />
                         <Route path="/hello" element={<HelloPage />} />
                         <Route
                             path="/auth"
@@ -85,7 +104,7 @@ function App() {
 
                         {/* --- Authenticated User Routes --- */}
                         <Route path="/profile" element={<ProfilePage />} />
-                        <Route path="/cart" element={<CartPage />} />
+                        <Route path="/cart" element={<CartPage fetchCartCount={fetchCartCount} />} />
                         <Route path="/order" element={<OrderPage />} />
 
                         {/* --- Admin-Only Routes --- */}
@@ -111,5 +130,4 @@ function App() {
 }
 
 export default App;
-
 
