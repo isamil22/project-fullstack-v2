@@ -12,15 +12,19 @@ import java.util.List;
 @Component
 public class ProductSpecification {
 
-    public Specification<Product> getProducts(String search, BigDecimal minPrice, BigDecimal maxPrice, String brand, Boolean bestseller, Boolean newArrival, Long categoryId) { // Added categoryId
+    public Specification<Product> getProducts(String search, BigDecimal minPrice, BigDecimal maxPrice, String brand, Boolean bestseller, Boolean newArrival, Long categoryId) {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
 
             if (search != null && !search.isEmpty()) {
                 String searchTerm = "%" + search.toLowerCase() + "%";
+                // Temporarily searching only by name to diagnose the issue
                 Predicate nameLike = criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), searchTerm);
-                Predicate descriptionLike = criteriaBuilder.like(criteriaBuilder.lower(root.get("description")), searchTerm);
-                predicates.add(criteriaBuilder.or(nameLike, descriptionLike));
+                predicates.add(nameLike);
+
+                // The original code that searched both name and description is commented out below for testing.
+                // Predicate descriptionLike = criteriaBuilder.like(criteriaBuilder.lower(root.get("description")), searchTerm);
+                // predicates.add(criteriaBuilder.or(nameLike, descriptionLike));
             }
 
             if (minPrice != null) {

@@ -8,12 +8,12 @@ import com.example.demo.model.Product;
 import com.example.demo.repositories.CategoryRepository;
 import com.example.demo.repositories.ProductRepository;
 import com.example.demo.specification.ProductSpecification;
-import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -108,24 +108,28 @@ public class ProductService {
      * UPDATED: Fetches products based on filter criteria using Specification
      * and returns a paginated result.
      */
+    @Transactional(readOnly = true)
     public Page<ProductDTO> getAllProducts(String search, Long categoryId, BigDecimal minPrice, BigDecimal maxPrice, String brand, Boolean bestseller, Boolean newArrival, Pageable pageable) {
         Specification<Product> spec = productSpecification.getProducts(search, minPrice, maxPrice, brand, bestseller, newArrival, categoryId);
         return productRepository.findAll(spec, pageable)
                 .map(productMapper::toDTO);
     }
 
+    @Transactional(readOnly = true)
     public List<ProductDTO> getBestsellers() {
         return productRepository.findByBestsellerIsTrue(Pageable.unpaged()).getContent().stream()
                 .map(productMapper::toDTO)
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public List<ProductDTO> getNewArrivals() {
         return productRepository.findByNewArrivalIsTrue(Pageable.unpaged()).getContent().stream()
                 .map(productMapper::toDTO)
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public ProductDTO getProductById(Long id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
