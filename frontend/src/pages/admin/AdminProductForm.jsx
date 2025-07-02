@@ -8,7 +8,7 @@ const AdminProductForm = () => {
         name: '',
         description: '',
         price: '',
-        category: '',
+        categoryId: '', // Corrected from 'category' to 'categoryId' to match backend DTO
         stock: '',
     });
     const [image, setImage] = useState(null);
@@ -28,7 +28,7 @@ const AdminProductForm = () => {
                         name: data.name,
                         description: data.description,
                         price: data.price,
-                        category: data.category,
+                        categoryId: data.category.id, // Assuming category is an object with an id
                         stock: data.stock,
                     });
                     setLoading(false);
@@ -60,20 +60,32 @@ const AdminProductForm = () => {
         setError(null);
 
         const formData = new FormData();
-        formData.append('name', product.name);
-        formData.append('description', product.description);
-        formData.append('price', product.price);
-        formData.append('category', product.category);
-        formData.append('stock', product.stock);
+
+        // --- THIS IS THE FIX ---
+        // 1. Bundle all product data into a single JSON object.
+        const productData = {
+            name: product.name,
+            description: product.description,
+            price: product.price,
+            categoryId: product.categoryId,
+            stock: product.stock
+        };
+
+        // 2. Create a Blob from the JSON object and append it as 'product'.
+        formData.append('product', new Blob([JSON.stringify(productData)], { type: 'application/json' }));
+
+        // 3. Append the image file(s). Note: Backend expects 'images' (plural)
         if (image) {
-            formData.append('image', image);
+            formData.append('images', image);
         }
+        // --- END OF FIX ---
+
 
         // Getting user info from localStorage for the authorization token
         const userInfo = JSON.parse(localStorage.getItem('userInfo'));
         const config = {
             headers: {
-                'Content-Type': 'multipart/form-data',
+                // The browser will set the correct 'Content-Type' for multipart/form-data with the boundary
                 Authorization: `Bearer ${userInfo?.token}`,
             },
         };
@@ -115,7 +127,7 @@ const AdminProductForm = () => {
                 <div className="form-group">
                     <label htmlFor="description">Description</label>
                     <Editor
-                        apiKey="jeqjwyja4t9lzd3h889y31tf98ag6a1kp16xfns173v9cgr0"
+                        apiKey="jeqjwyja4t9lzd3h889y31tf98ag6a1kp16xfns173v9cgr0" // Replace with your TinyMCE API key
                         value={product.description}
                         onEditorChange={handleDescriptionChange}
                         init={{
@@ -150,13 +162,13 @@ const AdminProductForm = () => {
                     />
                 </div>
                 <div className="form-group">
-                    <label htmlFor="category">Category</label>
+                    <label htmlFor="categoryId">Category ID</label>
                     <input
                         type="text"
                         className="form-control"
-                        id="category"
-                        name="category"
-                        value={product.category}
+                        id="categoryId"
+                        name="categoryId"
+                        value={product.categoryId}
                         onChange={handleChange}
                         required
                     />
