@@ -1,6 +1,5 @@
 package com.example.demo.exception;
 
-
 import com.example.demo.dto.ErrorDetails;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,14 +16,26 @@ public class GlobalExceptionHandler {
         ErrorDetails errorDetails = new ErrorDetails(new Date(), ex.getMessage(), request.getDescription(false));
         return new ResponseEntity<>(errorDetails, HttpStatus.NOT_FOUND);
     }
+
     @ExceptionHandler(InsufficientStockException.class)
     public ResponseEntity<?> handleInsufficientStockException(InsufficientStockException ex, WebRequest request){
         ErrorDetails errorDetails = new ErrorDetails(new Date(), ex.getMessage(), request.getDescription(false));
-        return new ResponseEntity<>(errorDetails, HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST); // Changed to 400
     }
+
+    // --- ADD THIS NEW EXCEPTION HANDLER ---
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<?> handleIllegalStateException(IllegalStateException ex, WebRequest request) {
+        // This is for cases like "Email already taken"
+        ErrorDetails errorDetails = new ErrorDetails(new Date(), ex.getMessage(), request.getDescription(false));
+        return new ResponseEntity<>(errorDetails, HttpStatus.CONFLICT); // Return 409 Conflict
+    }
+    // ------------------------------------
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<?> handleGlobalException(Exception ex, WebRequest request){
         ErrorDetails errorDetails = new ErrorDetails(new Date(), ex.getMessage(), request.getDescription(false));
-        return new ResponseEntity<>(errorDetails, HttpStatus.NOT_FOUND);
+        // It's better to return a 500 for general server errors
+        return new ResponseEntity<>(errorDetails, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

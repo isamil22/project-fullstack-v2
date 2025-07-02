@@ -47,7 +47,8 @@ public class SecurityConfig {
                                 "/api/auth/register",
                                 "/api/auth/confirm-email",
                                 "/api/auth/forgot-password",
-                                "/api/auth/reset-password")
+                                "/api/auth/reset-password",
+                                "/api/test-post") // <-- ADD THIS LINE to permit the new test endpoint
                         .permitAll()
                         .requestMatchers(HttpMethod.GET,
                                 "/api/products/**",

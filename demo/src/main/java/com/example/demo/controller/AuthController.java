@@ -6,7 +6,7 @@ import com.example.demo.mapper.UserMapper;
 import com.example.demo.model.User;
 import com.example.demo.service.JwtService;
 import com.example.demo.service.UserService;
-import jakarta.validation.Valid;
+import jakarta.validation.Valid; // Keep this for other methods
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -16,6 +16,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map; // <-- Import Map
 
 @RestController
 @RequestMapping("/api/auth")
@@ -36,9 +38,18 @@ public class AuthController {
         return ResponseEntity.ok(jwt);
     }
 
+    // --- MODIFIED METHOD ---
     @PostMapping("/register")
-    public ResponseEntity<User> register(@Valid @RequestBody User user){
-        return ResponseEntity.ok(userService.registerUser(user));
+    public ResponseEntity<User> register(@RequestBody Map<String, String> payload) {
+        // Manually create the User object from the incoming data
+        User user = new User();
+        user.setFullName(payload.get("fullName"));
+        user.setEmail(payload.get("email"));
+        user.setPassword(payload.get("password"));
+
+        // Call the user service with the newly created object
+        User registeredUser = userService.registerUser(user);
+        return ResponseEntity.ok(registeredUser);
     }
 
     @PostMapping("/change-password")
