@@ -109,6 +109,11 @@ const AdminProductForm = () => {
     };
 
     const handleDescriptionChange = (value) => {
+        // If the page is still loading the main product data,
+        // ignore any initial, unwanted change events from the editor.
+        if (loading) {
+            return;
+        }
         setProduct(prev => ({ ...prev, description: value }));
     };
 
@@ -119,8 +124,14 @@ const AdminProductForm = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
+
+        const productData = {
+            ...product,
+            description: product.description,
+        };
+
         const formData = new FormData();
-        formData.append('product', new Blob([JSON.stringify(product)], { type: 'application/json' }));
+        formData.append('product', new Blob([JSON.stringify(productData)], { type: 'application/json' }));
 
         for (let i = 0; i < images.length; i++) {
             formData.append('images', images[i]);
