@@ -3,8 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { TextField, Button, Select, MenuItem, InputLabel, FormControl, Checkbox, FormControlLabel } from '@mui/material';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
-import { createProduct, updateProduct, getProductById, getAllCategories, uploadDescriptionImage } from '../../api/apiService'; // Import necessary functions
-import Loader from '../../components/Loader'; // Import the Loader component
+import { createProduct, updateProduct, getProductById, getAllCategories, uploadDescriptionImage } from '../../api/apiService';
+import Loader from '../../components/Loader';
 
 const AdminProductForm = () => {
     const { id } = useParams();
@@ -15,14 +15,14 @@ const AdminProductForm = () => {
         description: '',
         price: '',
         quantity: '',
-        categoryId: '', // Use categoryId to match the DTO
+        categoryId: '',
         brand: '',
         bestseller: false,
         newArrival: false,
     });
     const [images, setImages] = useState([]);
-    const [categories, setCategories] = useState([]); // State to hold categories
-    const [loading, setLoading] = useState(false); // State for loading indicator
+    const [categories, setCategories] = useState([]);
+    const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
 
@@ -49,7 +49,6 @@ const AdminProductForm = () => {
         };
     };
 
-
     const modules = {
         toolbar: {
             container: [
@@ -65,9 +64,7 @@ const AdminProductForm = () => {
         },
     };
 
-
     useEffect(() => {
-        // Fetch categories
         getAllCategories()
             .then(response => {
                 setCategories(response.data);
@@ -77,7 +74,6 @@ const AdminProductForm = () => {
                 setError("Failed to load categories.");
             });
 
-        // If editing, fetch product data
         if (id) {
             setLoading(true);
             getProductById(id)
@@ -122,9 +118,8 @@ const AdminProductForm = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setLoading(true); // Start loading
+        setLoading(true);
         const formData = new FormData();
-
         formData.append('product', new Blob([JSON.stringify(product)], { type: 'application/json' }));
 
         for (let i = 0; i < images.length; i++) {
@@ -147,11 +142,11 @@ const AdminProductForm = () => {
             const errorMessage = err.response?.data?.message || 'Operation failed. Please try again.';
             setError(errorMessage);
         } finally {
-            setLoading(false); // Stop loading
+            setLoading(false);
         }
     };
 
-    if (loading && !id) { // Show a full-page loader only when initially loading product data for editing
+    if (loading && !id) {
         return <Loader />;
     }
 
@@ -164,8 +159,8 @@ const AdminProductForm = () => {
 
                 <TextField label="Name" name="name" value={product.name} onChange={handleChange} fullWidth required />
 
-                <FormControl fullWidth margin="normal">
-                    <label style={{ paddingBottom: '10px' }}>Description</label>
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
                     <ReactQuill
                         ref={quillRef}
                         theme="snow"
@@ -173,7 +168,7 @@ const AdminProductForm = () => {
                         onChange={handleDescriptionChange}
                         modules={modules}
                     />
-                </FormControl>
+                </div>
 
                 <TextField label="Price" name="price" type="number" value={product.price} onChange={handleChange} fullWidth required />
                 <TextField label="Quantity" name="quantity" type="number" value={product.quantity} onChange={handleChange} fullWidth required />

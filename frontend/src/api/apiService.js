@@ -168,13 +168,7 @@ export const deleteReview = (reviewId) => {
     return apiService.delete(`/reviews/${reviewId}`);
 };
 
-export const uploadDescriptionImage = (imageData) => {
-    return apiService.post('/products/description-image', imageData, {
-        headers: {
-            'Content-Type': 'multipart/form-data',
-        },
-    });
-};
+
 
 // --- Hero Section API Functions ---
 export const getHero = () => {
@@ -201,10 +195,9 @@ export const resetPassword = (token, newPassword) => {
     return apiService.post('/auth/reset-password', { token, newPassword });
 };
 
-
-// --- New Function for description image upload ---
-export const uploadDescriptionImage = (imageData) => {
-    return apiService.post('/products/description-image', imageData, {
+// --- Corrected Description Image Upload Function ---
+export const uploadDescriptionImage = (formData) => {
+    return apiService.post('/products/description-image', formData, {
         headers: {
             'Content-Type': 'multipart/form-data',
         },
