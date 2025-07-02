@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios'; // Using axios directly for API calls
+import axios from 'axios';
 import { Editor } from '@tinymce/tinymce-react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { uploadDescriptionImage } from '../../api/apiService';
 
 const AdminProductForm = () => {
     const [product, setProduct] = useState({
         name: '',
         description: '',
         price: '',
-        categoryId: '', // Corrected from 'category' to 'categoryId' to match backend DTO
+        categoryId: '',
         stock: '',
     });
     const [image, setImage] = useState(null);
@@ -17,7 +18,6 @@ const AdminProductForm = () => {
     const navigate = useNavigate();
     const { id } = useParams();
 
-    // Fetch product details if in "edit" mode
     useEffect(() => {
         if (id) {
             const fetchProduct = async () => {
@@ -28,7 +28,7 @@ const AdminProductForm = () => {
                         name: data.name,
                         description: data.description,
                         price: data.price,
-                        categoryId: data.category.id, // Assuming category is an object with an id
+                        categoryId: data.category.id,
                         stock: data.stock,
                     });
                     setLoading(false);
@@ -60,9 +60,6 @@ const AdminProductForm = () => {
         setError(null);
 
         const formData = new FormData();
-
-        // --- THIS IS THE FIX ---
-        // 1. Bundle all product data into a single JSON object.
         const productData = {
             name: product.name,
             description: product.description,
@@ -70,32 +67,22 @@ const AdminProductForm = () => {
             categoryId: product.categoryId,
             stock: product.stock
         };
-
-        // 2. Create a Blob from the JSON object and append it as 'product'.
         formData.append('product', new Blob([JSON.stringify(productData)], { type: 'application/json' }));
-
-        // 3. Append the image file(s). Note: Backend expects 'images' (plural)
         if (image) {
             formData.append('images', image);
         }
-        // --- END OF FIX ---
 
-
-        // Getting user info from localStorage for the authorization token
         const userInfo = JSON.parse(localStorage.getItem('userInfo'));
         const config = {
             headers: {
-                // The browser will set the correct 'Content-Type' for multipart/form-data with the boundary
                 Authorization: `Bearer ${userInfo?.token}`,
             },
         };
 
         try {
             if (id) {
-                // Update existing product
                 await axios.put(`/api/v1/products/${id}`, formData, config);
             } else {
-                // Create new product
                 await axios.post('/api/v1/products', formData, config);
             }
             setLoading(false);
@@ -105,6 +92,23 @@ const AdminProductForm = () => {
             setLoading(false);
         }
     };
+
+    const handleImageUpload = (blobInfo, progress) => new Promise((resolve, reject) => {
+        const formData = new FormData();
+        formData.append('image', blobInfo.blob(), blobInfo.filename());
+
+        uploadDescriptionImage(formData)
+            .then((response) => {
+                if (response.data && response.data.url) {
+                    resolve(response.data.url);
+                } else {
+                    reject('Invalid JSON response');
+                }
+            })
+            .catch((error) => {
+                reject(`Image upload failed: ${error.message}`);
+            });
+    });
 
     return (
         <div className="container mt-5">
@@ -127,7 +131,7 @@ const AdminProductForm = () => {
                 <div className="form-group">
                     <label htmlFor="description">Description</label>
                     <Editor
-                        apiKey="jeqjwyja4t9lzd3h889y31tf98ag6a1kp16xfns173v9cgr0" // Replace with your TinyMCE API key
+                        apiKey="jeqjwyja4t9lzd3h889y31tf98ag6a1kp16xfns173v9cgr0"
                         value={product.description}
                         onEditorChange={handleDescriptionChange}
                         init={{
@@ -142,10 +146,10 @@ const AdminProductForm = () => {
                                 'bold italic forecolor | alignleft aligncenter ' +
                                 'alignright alignjustify | bullist numlist outdent indent | ' +
                                 'removeformat | image | help',
-                            content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }',
+                            images_upload_handler: handleImageUpload,
                             automatic_uploads: true,
-                            images_upload_url: '/api/v1/products/uploads', // Ensure this backend route exists
                             file_picker_types: 'image',
+                            content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }',
                         }}
                     />
                 </div>
