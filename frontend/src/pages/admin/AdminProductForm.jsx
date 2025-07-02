@@ -79,6 +79,10 @@ const AdminProductForm = () => {
             getProductById(id)
                 .then(response => {
                     const data = response.data;
+
+                    // --- 🐞 1. LOGGING THE API RESPONSE ---
+                    console.log("API Response Data:", data);
+
                     setProduct({
                         name: data.name || '',
                         description: data.description || '',
@@ -108,12 +112,8 @@ const AdminProductForm = () => {
         }));
     };
 
+    // Corrected handleDescriptionChange function
     const handleDescriptionChange = (value) => {
-        // If the page is still loading the main product data,
-        // ignore any initial, unwanted change events from the editor.
-        if (loading) {
-            return;
-        }
         setProduct(prev => ({ ...prev, description: value }));
     };
 
@@ -157,9 +157,14 @@ const AdminProductForm = () => {
         }
     };
 
-    if (loading && !id) {
+    // --- ✅ UPDATED LOADING CHECK ---
+    // This prevents the form from rendering until data is fetched
+    if (loading) {
         return <Loader />;
     }
+
+    // --- 🐞 2. LOGGING THE VALUE PASSED TO THE EDITOR ---
+    console.log("Value passed to ReactQuill:", product.description);
 
     return (
         <div className="p-6">
@@ -173,6 +178,7 @@ const AdminProductForm = () => {
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
                     <ReactQuill
+                        key={product.description} //  ADD THIS LINE
                         ref={quillRef}
                         theme="snow"
                         value={product.description}
