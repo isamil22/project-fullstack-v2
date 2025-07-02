@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { Editor } from '@tinymce/tinymce-react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { uploadDescriptionImage } from '../../api/apiService';
+import { createProduct, updateProduct, getProductById, uploadDescriptionImage, getAllCategories } from '../../api/apiService';
 
 const AdminProductForm = () => {
     const [product, setProduct] = useState({
@@ -10,26 +9,46 @@ const AdminProductForm = () => {
         description: '',
         price: '',
         categoryId: '',
-        stock: '',
+        quantity: '',
+        bestseller: false,
+        newArrival: false,
     });
-    const [image, setImage] = useState(null);
+    const [images, setImages] = useState([]);
+    const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const navigate = useNavigate();
     const { id } = useParams();
 
+    // Effect to fetch categories for the dropdown
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const { data } = await getAllCategories();
+                setCategories(data);
+            } catch (err) {
+                console.error("Failed to fetch categories", err);
+                setError("Failed to load product categories. Please try again.");
+            }
+        };
+        fetchCategories();
+    }, []);
+
+    // Effect to fetch product data if we are editing
     useEffect(() => {
         if (id) {
             const fetchProduct = async () => {
                 try {
                     setLoading(true);
-                    const { data } = await axios.get(`/api/v1/products/${id}`);
+                    const { data } = await getProductById(id);
                     setProduct({
                         name: data.name,
                         description: data.description,
                         price: data.price,
-                        categoryId: data.category.id,
-                        stock: data.stock,
+                        categoryId: data.categoryId,
+                        quantity: data.quantity,
+                        bestseller: data.bestseller,
+                        newArrival: data.newArrival,
                     });
                     setLoading(false);
                 } catch (err) {
@@ -42,8 +61,11 @@ const AdminProductForm = () => {
     }, [id]);
 
     const handleChange = (e) => {
-        const { name, value } = e.target;
-        setProduct((prev) => ({ ...prev, [name]: value }));
+        const { name, value, type, checked } = e.target;
+        setProduct((prev) => ({
+            ...prev,
+            [name]: type === 'checkbox' ? checked : value,
+        }));
     };
 
     const handleDescriptionChange = (content) => {
@@ -51,7 +73,7 @@ const AdminProductForm = () => {
     };
 
     const handleImageChange = (e) => {
-        setImage(e.target.files[0]);
+        setImages(e.target.files);
     };
 
     const handleSubmit = async (e) => {
@@ -60,30 +82,19 @@ const AdminProductForm = () => {
         setError(null);
 
         const formData = new FormData();
-        const productData = {
-            name: product.name,
-            description: product.description,
-            price: product.price,
-            categoryId: product.categoryId,
-            stock: product.stock
-        };
-        formData.append('product', new Blob([JSON.stringify(productData)], { type: 'application/json' }));
-        if (image) {
-            formData.append('images', image);
-        }
+        formData.append('product', new Blob([JSON.stringify(product)], { type: 'application/json' }));
 
-        const userInfo = JSON.parse(localStorage.getItem('userInfo'));
-        const config = {
-            headers: {
-                Authorization: `Bearer ${userInfo?.token}`,
-            },
-        };
+        if (images.length > 0) {
+            for (let i = 0; i < images.length; i++) {
+                formData.append('images', images[i]);
+            }
+        }
 
         try {
             if (id) {
-                await axios.put(`/api/v1/products/${id}`, formData, config);
+                await updateProduct(id, formData);
             } else {
-                await axios.post('/api/v1/products', formData, config);
+                await createProduct(formData);
             }
             setLoading(false);
             navigate('/admin/products');
@@ -96,7 +107,6 @@ const AdminProductForm = () => {
     const handleImageUpload = (blobInfo, progress) => new Promise((resolve, reject) => {
         const formData = new FormData();
         formData.append('image', blobInfo.blob(), blobInfo.filename());
-
         uploadDescriptionImage(formData)
             .then((response) => {
                 if (response.data && response.data.url) {
@@ -118,20 +128,13 @@ const AdminProductForm = () => {
             <form onSubmit={handleSubmit}>
                 <div className="form-group">
                     <label htmlFor="name">Name</label>
-                    <input
-                        type="text"
-                        className="form-control"
-                        id="name"
-                        name="name"
-                        value={product.name}
-                        onChange={handleChange}
-                        required
-                    />
+                    <input type="text" className="form-control" id="name" name="name" value={product.name} onChange={handleChange} required />
                 </div>
+
                 <div className="form-group">
-                    <label htmlFor="description">Description</label>
+                    <label>Description</label>
                     <Editor
-                        apiKey="jeqjwyja4t9lzd3h889y31tf98ag6a1kp16xfns173v9cgr0"
+                        apiKey="jeqjwyja4t9lzd3h889y31tf98ag6a1kp16xfns173v9cgr0" // Your correct API key is now here
                         value={product.description}
                         onEditorChange={handleDescriptionChange}
                         init={{
@@ -149,58 +152,50 @@ const AdminProductForm = () => {
                             images_upload_handler: handleImageUpload,
                             automatic_uploads: true,
                             file_picker_types: 'image',
-                            content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }',
+                            content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }'
                         }}
                     />
                 </div>
+
                 <div className="form-group">
                     <label htmlFor="price">Price</label>
-                    <input
-                        type="number"
-                        className="form-control"
-                        id="price"
-                        name="price"
-                        value={product.price}
-                        onChange={handleChange}
-                        required
-                    />
+                    <input type="number" step="0.01" className="form-control" id="price" name="price" value={product.price} onChange={handleChange} required />
                 </div>
+
                 <div className="form-group">
-                    <label htmlFor="categoryId">Category ID</label>
-                    <input
-                        type="text"
-                        className="form-control"
-                        id="categoryId"
-                        name="categoryId"
-                        value={product.categoryId}
-                        onChange={handleChange}
-                        required
-                    />
+                    <label htmlFor="quantity">Stock Quantity</label>
+                    <input type="number" className="form-control" id="quantity" name="quantity" value={product.quantity} onChange={handleChange} required />
                 </div>
+
                 <div className="form-group">
-                    <label htmlFor="stock">Stock</label>
-                    <input
-                        type="number"
-                        className="form-control"
-                        id="stock"
-                        name="stock"
-                        value={product.stock}
-                        onChange={handleChange}
-                        required
-                    />
+                    <label htmlFor="categoryId">Category</label>
+                    <select id="categoryId" name="categoryId" value={product.categoryId} onChange={handleChange} className="form-control" required>
+                        <option value="">-- Select a Category --</option>
+                        {categories.map(category => (
+                            <option key={category.id} value={category.id}>
+                                {category.name}
+                            </option>
+                        ))}
+                    </select>
                 </div>
+
                 <div className="form-group">
-                    <label htmlFor="image">Image</label>
-                    <input
-                        type="file"
-                        className="form-control-file"
-                        id="image"
-                        name="image"
-                        onChange={handleImageChange}
-                    />
+                    <label htmlFor="images">Images</label>
+                    <input type="file" className="form-control-file" id="images" name="images" multiple onChange={handleImageChange} />
                 </div>
+
+                <div className="form-check">
+                    <input type="checkbox" className="form-check-input" id="bestseller" name="bestseller" checked={product.bestseller} onChange={handleChange} />
+                    <label className="form-check-label" htmlFor="bestseller">Bestseller</label>
+                </div>
+
+                <div className="form-check">
+                    <input type="checkbox" className="form-check-input" id="newArrival" name="newArrival" checked={product.newArrival} onChange={handleChange} />
+                    <label className="form-check-label" htmlFor="newArrival">New Arrival</label>
+                </div>
+
                 <button type="submit" className="btn btn-primary mt-3" disabled={loading}>
-                    {loading ? 'Saving...' : (id ? 'Update' : 'Create')}
+                    {loading ? 'Saving...' : (id ? 'Update Product' : 'Create Product')}
                 </button>
             </form>
         </div>
