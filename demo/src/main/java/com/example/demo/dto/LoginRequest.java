@@ -1,13 +1,14 @@
 package com.example.demo.dto;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
+/**
+ * This class represents the data transfer object for login requests.
+ * It now includes a token for reCAPTCHA validation.
+ */
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class LoginRequest {
     private String email;
     private String password;
+    private String recaptchaToken; // Added for reCAPTCHA validation
 }
