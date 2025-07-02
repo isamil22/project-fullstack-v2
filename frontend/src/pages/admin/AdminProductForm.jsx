@@ -1,216 +1,191 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { TextField, Button, Select, MenuItem, InputLabel, FormControl, Checkbox, FormControlLabel } from '@mui/material';
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
-import { createProduct, updateProduct, getProductById, getAllCategories, uploadDescriptionImage } from '../../api/apiService';
-import Loader from '../../components/Loader';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios'; // Using axios directly for API calls
+import { Editor } from '@tinymce/tinymce-react';
+import { useNavigate, useParams } from 'react-router-dom';
 
 const AdminProductForm = () => {
-    const { id } = useParams();
-    const navigate = useNavigate();
-    const quillRef = useRef(null);
     const [product, setProduct] = useState({
         name: '',
         description: '',
         price: '',
-        quantity: '',
-        categoryId: '',
-        brand: '',
-        bestseller: false,
-        newArrival: false,
+        category: '',
+        stock: '',
     });
-    const [images, setImages] = useState([]);
-    const [categories, setCategories] = useState([]);
+    const [image, setImage] = useState(null);
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
+    const [error, setError] = useState(null);
+    const navigate = useNavigate();
+    const { id } = useParams();
 
-    const imageHandler = () => {
-        const input = document.createElement('input');
-        input.setAttribute('type', 'file');
-        input.setAttribute('accept', 'image/*');
-        input.click();
-
-        input.onchange = async () => {
-            const file = input.files[0];
-            const formData = new FormData();
-            formData.append('image', file);
-
-            try {
-                const res = await uploadDescriptionImage(formData);
-                const quill = quillRef.current.getEditor();
-                const range = quill.getSelection(true);
-                quill.insertEmbed(range.index, 'image', res.data.url);
-            } catch (err) {
-                console.error("Image upload failed:", err);
-                setError("Image upload failed.");
-            }
-        };
-    };
-
-    const modules = {
-        toolbar: {
-            container: [
-                [{ 'header': [1, 2, false] }],
-                ['bold', 'italic', 'underline', 'strike', 'blockquote'],
-                [{ 'list': 'ordered' }, { 'list': 'bullet' }, { 'indent': '-1' }, { 'indent': '+1' }],
-                ['link', 'image'],
-                ['clean']
-            ],
-            handlers: {
-                image: imageHandler
-            }
-        },
-    };
-
+    // Fetch product details if in "edit" mode
     useEffect(() => {
-        getAllCategories()
-            .then(response => {
-                setCategories(response.data);
-            })
-            .catch(err => {
-                console.error("Failed to fetch categories:", err);
-                setError("Failed to load categories.");
-            });
-
         if (id) {
-            setLoading(true);
-            getProductById(id)
-                .then(response => {
-                    const data = response.data;
-
-                    // --- 🐞 1. LOGGING THE API RESPONSE ---
-                    console.log("API Response Data:", data);
-
+            const fetchProduct = async () => {
+                try {
+                    setLoading(true);
+                    const { data } = await axios.get(`/api/v1/products/${id}`);
                     setProduct({
-                        name: data.name || '',
-                        description: data.description || '',
-                        price: data.price || '',
-                        quantity: data.quantity || '',
-                        categoryId: data.categoryId || '',
-                        brand: data.brand || '',
-                        bestseller: data.bestseller || false,
-                        newArrival: data.newArrival || false,
+                        name: data.name,
+                        description: data.description,
+                        price: data.price,
+                        category: data.category,
+                        stock: data.stock,
                     });
-                })
-                .catch(err => {
-                    console.error("Failed to fetch product data:", err);
-                    setError("Failed to load product data.");
-                })
-                .finally(() => {
                     setLoading(false);
-                });
+                } catch (err) {
+                    setError(err.response?.data?.message || err.message);
+                    setLoading(false);
+                }
+            };
+            fetchProduct();
         }
     }, [id]);
 
     const handleChange = (e) => {
-        const { name, value, type, checked } = e.target;
-        setProduct(prev => ({
-            ...prev,
-            [name]: type === 'checkbox' ? checked : value,
-        }));
+        const { name, value } = e.target;
+        setProduct((prev) => ({ ...prev, [name]: value }));
     };
 
-    // Corrected handleDescriptionChange function
-    const handleDescriptionChange = (value) => {
-        setProduct(prev => ({ ...prev, description: value }));
+    const handleDescriptionChange = (content) => {
+        setProduct((prev) => ({ ...prev, description: content }));
     };
 
     const handleImageChange = (e) => {
-        setImages(e.target.files);
+        setImage(e.target.files[0]);
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-
-        const productData = {
-            ...product,
-            description: product.description,
-        };
+        setError(null);
 
         const formData = new FormData();
-        formData.append('product', new Blob([JSON.stringify(productData)], { type: 'application/json' }));
-
-        for (let i = 0; i < images.length; i++) {
-            formData.append('images', images[i]);
+        formData.append('name', product.name);
+        formData.append('description', product.description);
+        formData.append('price', product.price);
+        formData.append('category', product.category);
+        formData.append('stock', product.stock);
+        if (image) {
+            formData.append('image', image);
         }
 
-        setError('');
-        setSuccess('');
+        // Getting user info from localStorage for the authorization token
+        const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+        const config = {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+                Authorization: `Bearer ${userInfo?.token}`,
+            },
+        };
 
         try {
             if (id) {
-                await updateProduct(id, formData);
-                setSuccess('Product updated successfully!');
+                // Update existing product
+                await axios.put(`/api/v1/products/${id}`, formData, config);
             } else {
-                await createProduct(formData);
-                setSuccess('Product created successfully!');
+                // Create new product
+                await axios.post('/api/v1/products', formData, config);
             }
-            setTimeout(() => navigate('/admin/products'), 2000);
+            setLoading(false);
+            navigate('/admin/products');
         } catch (err) {
-            const errorMessage = err.response?.data?.message || 'Operation failed. Please try again.';
-            setError(errorMessage);
-        } finally {
+            setError(err.response?.data?.message || err.message);
             setLoading(false);
         }
     };
 
-    // --- ✅ UPDATED LOADING CHECK ---
-    // This prevents the form from rendering until data is fetched
-    if (loading) {
-        return <Loader />;
-    }
-
-    // --- 🐞 2. LOGGING THE VALUE PASSED TO THE EDITOR ---
-    console.log("Value passed to ReactQuill:", product.description);
-
     return (
-        <div className="p-6">
-            <h1 className="text-3xl font-bold mb-6">{id ? 'Edit Product' : 'Create Product'}</h1>
-            <form onSubmit={handleSubmit} className="space-y-6 max-w-xl mx-auto bg-white p-8 rounded-lg shadow-md">
-                {error && <p className="text-red-500">{error}</p>}
-                {success && <p className="text-green-500">{success}</p>}
-
-                <TextField label="Name" name="name" value={product.name} onChange={handleChange} fullWidth required />
-
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                    <ReactQuill
-                        key={product.description} //  ADD THIS LINE
-                        ref={quillRef}
-                        theme="snow"
-                        value={product.description}
-                        onChange={handleDescriptionChange}
-                        modules={modules}
+        <div className="container mt-5">
+            <h2>{id ? 'Edit Product' : 'Create Product'}</h2>
+            {loading && <p>Loading...</p>}
+            {error && <p style={{ color: 'red' }}>{error}</p>}
+            <form onSubmit={handleSubmit}>
+                <div className="form-group">
+                    <label htmlFor="name">Name</label>
+                    <input
+                        type="text"
+                        className="form-control"
+                        id="name"
+                        name="name"
+                        value={product.name}
+                        onChange={handleChange}
+                        required
                     />
                 </div>
-
-                <TextField label="Price" name="price" type="number" value={product.price} onChange={handleChange} fullWidth required />
-                <TextField label="Quantity" name="quantity" type="number" value={product.quantity} onChange={handleChange} fullWidth required />
-
-                <FormControl fullWidth required>
-                    <InputLabel>Category</InputLabel>
-                    <Select name="categoryId" value={product.categoryId} onChange={handleChange} label="Category">
-                        {categories.map(cat => (
-                            <MenuItem key={cat.id} value={cat.id}>
-                                {cat.name}
-                            </MenuItem>
-                        ))}
-                    </Select>
-                </FormControl>
-
-                <TextField label="Brand" name="brand" value={product.brand} onChange={handleChange} fullWidth required />
-
-                <FormControlLabel control={<Checkbox name="bestseller" checked={product.bestseller} onChange={handleChange} />} label="Bestseller" />
-                <FormControlLabel control={<Checkbox name="newArrival" checked={product.newArrival} onChange={handleChange} />} label="New Arrival" />
-
-                <input type="file" multiple onChange={handleImageChange} style={{ margin: '20px 0' }} />
-
-                <Button type="submit" variant="contained" color="primary" fullWidth disabled={loading}>
-                    {loading ? <Loader /> : (id ? 'Update Product' : 'Add Product')}
-                </Button>
+                <div className="form-group">
+                    <label htmlFor="description">Description</label>
+                    <Editor
+                        apiKey="jeqjwyja4t9lzd3h889y31tf98ag6a1kp16xfns173v9cgr0"
+                        value={product.description}
+                        onEditorChange={handleDescriptionChange}
+                        init={{
+                            height: 500,
+                            menubar: true,
+                            plugins: [
+                                'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+                                'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+                                'insertdatetime', 'media', 'table', 'help', 'wordcount'
+                            ],
+                            toolbar: 'undo redo | blocks | ' +
+                                'bold italic forecolor | alignleft aligncenter ' +
+                                'alignright alignjustify | bullist numlist outdent indent | ' +
+                                'removeformat | image | help',
+                            content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }',
+                            automatic_uploads: true,
+                            images_upload_url: '/api/v1/products/uploads', // Ensure this backend route exists
+                            file_picker_types: 'image',
+                        }}
+                    />
+                </div>
+                <div className="form-group">
+                    <label htmlFor="price">Price</label>
+                    <input
+                        type="number"
+                        className="form-control"
+                        id="price"
+                        name="price"
+                        value={product.price}
+                        onChange={handleChange}
+                        required
+                    />
+                </div>
+                <div className="form-group">
+                    <label htmlFor="category">Category</label>
+                    <input
+                        type="text"
+                        className="form-control"
+                        id="category"
+                        name="category"
+                        value={product.category}
+                        onChange={handleChange}
+                        required
+                    />
+                </div>
+                <div className="form-group">
+                    <label htmlFor="stock">Stock</label>
+                    <input
+                        type="number"
+                        className="form-control"
+                        id="stock"
+                        name="stock"
+                        value={product.stock}
+                        onChange={handleChange}
+                        required
+                    />
+                </div>
+                <div className="form-group">
+                    <label htmlFor="image">Image</label>
+                    <input
+                        type="file"
+                        className="form-control-file"
+                        id="image"
+                        name="image"
+                        onChange={handleImageChange}
+                    />
+                </div>
+                <button type="submit" className="btn btn-primary mt-3" disabled={loading}>
+                    {loading ? 'Saving...' : (id ? 'Update' : 'Create')}
+                </button>
             </form>
         </div>
     );
