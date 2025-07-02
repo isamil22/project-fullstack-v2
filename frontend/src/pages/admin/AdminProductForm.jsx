@@ -1,14 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { TextField, Button, Select, MenuItem, InputLabel, FormControl, Checkbox, FormControlLabel } from '@mui/material';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
-import { createProduct, updateProduct, getProductById, getAllCategories } from '../../api/apiService'; // Import necessary functions
+import { createProduct, updateProduct, getProductById, getAllCategories, uploadDescriptionImage } from '../../api/apiService'; // Import necessary functions
 import Loader from '../../components/Loader'; // Import the Loader component
 
 const AdminProductForm = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const quillRef = useRef(null);
     const [product, setProduct] = useState({
         name: '',
         description: '',
@@ -24,6 +25,46 @@ const AdminProductForm = () => {
     const [loading, setLoading] = useState(false); // State for loading indicator
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
+
+    const imageHandler = () => {
+        const input = document.createElement('input');
+        input.setAttribute('type', 'file');
+        input.setAttribute('accept', 'image/*');
+        input.click();
+
+        input.onchange = async () => {
+            const file = input.files[0];
+            const formData = new FormData();
+            formData.append('image', file);
+
+            try {
+                const res = await uploadDescriptionImage(formData);
+                const quill = quillRef.current.getEditor();
+                const range = quill.getSelection(true);
+                quill.insertEmbed(range.index, 'image', res.data.url);
+            } catch (err) {
+                console.error("Image upload failed:", err);
+                setError("Image upload failed.");
+            }
+        };
+    };
+
+
+    const modules = {
+        toolbar: {
+            container: [
+                [{ 'header': [1, 2, false] }],
+                ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+                [{ 'list': 'ordered' }, { 'list': 'bullet' }, { 'indent': '-1' }, { 'indent': '+1' }],
+                ['link', 'image'],
+                ['clean']
+            ],
+            handlers: {
+                image: imageHandler
+            }
+        },
+    };
+
 
     useEffect(() => {
         // Fetch categories
@@ -125,7 +166,13 @@ const AdminProductForm = () => {
 
                 <FormControl fullWidth margin="normal">
                     <label style={{ paddingBottom: '10px' }}>Description</label>
-                    <ReactQuill theme="snow" value={product.description} onChange={handleDescriptionChange} />
+                    <ReactQuill
+                        ref={quillRef}
+                        theme="snow"
+                        value={product.description}
+                        onChange={handleDescriptionChange}
+                        modules={modules}
+                    />
                 </FormControl>
 
                 <TextField label="Price" name="price" type="number" value={product.price} onChange={handleChange} fullWidth required />

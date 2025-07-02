@@ -200,3 +200,13 @@ export const forgotPassword = (email) => {
 export const resetPassword = (token, newPassword) => {
     return apiService.post('/auth/reset-password', { token, newPassword });
 };
+
+
+// --- New Function for description image upload ---
+export const uploadDescriptionImage = (imageData) => {
+    return apiService.post('/products/description-image', imageData, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        },
+    });
+};

@@ -14,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/products")
@@ -41,6 +42,18 @@ public class ProductController {
         ProductDTO updatedProduct = productService.updateProductWithImages(id, productDTO, images);
         return ResponseEntity.ok(updatedProduct);
     }
+
+    @PostMapping("/description-image")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> uploadDescriptionImage(@RequestParam("image") MultipartFile image) {
+        try {
+            String imageUrl = productService.uploadAndGetImageUrl(image);
+            return ResponseEntity.ok(Map.of("url", imageUrl));
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to upload image");
+        }
+    }
+
 
     @GetMapping("/bestsellers")
     public ResponseEntity<List<ProductDTO>> getBestsellers() {

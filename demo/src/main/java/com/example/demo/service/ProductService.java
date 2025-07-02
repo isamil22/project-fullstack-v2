@@ -88,6 +88,10 @@ public class ProductService {
         return productMapper.toDTO(updatedProduct);
     }
 
+    public String uploadAndGetImageUrl(MultipartFile image) throws IOException {
+        return s3Service.saveImage(image);
+    }
+
     private List<String> uploadAndGetImageUrls(List<MultipartFile> images) {
         return images.stream()
                 .map(image -> {
