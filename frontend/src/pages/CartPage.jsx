@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getCart, removeCartItem } from '../api/apiService';
-import { Link } from 'react-router-dom'; // Import Link
+import { Link } from 'react-router-dom';
 
 const CartPage = () => {
     const [cart, setCart] = useState(null);
@@ -28,6 +28,11 @@ const CartPage = () => {
         }
     };
 
+    const calculateTotal = () => {
+        if (!cart || !cart.items) return '0.00';
+        return cart.items.reduce((total, item) => total + (item.price * item.quantity), 0).toFixed(2);
+    };
+
     if (error) {
         return <p className="text-red-500 text-center">{error}</p>;
     }
@@ -47,17 +52,23 @@ const CartPage = () => {
                         <div key={item.id} className="flex items-center justify-between border-b py-4">
                             <div>
                                 <h2 className="text-lg font-semibold">{item.productName}</h2>
+                                <p className="text-sm text-gray-600">Unit Price: ${item.price.toFixed(2)}</p>
                                 <p>Quantity: {item.quantity}</p>
                             </div>
-                            <button
-                                onClick={() => handleRemove(item.productId)}
-                                className="text-red-500 hover:text-red-700"
-                            >
-                                Remove
-                            </button>
+                            <div>
+                                <p className="font-semibold">${(item.price * item.quantity).toFixed(2)}</p>
+                                <button
+                                    onClick={() => handleRemove(item.productId)}
+                                    className="text-red-500 hover:text-red-700 text-sm"
+                                >
+                                    Remove
+                                </button>
+                            </div>
                         </div>
                     ))}
-                    {/* Add Checkout Button */}
+                    <div className="text-right mt-4">
+                        <h2 className="text-2xl font-bold">Total: ${calculateTotal()}</h2>
+                    </div>
                     <div className="text-center mt-8">
                         <Link
                             to="/order"

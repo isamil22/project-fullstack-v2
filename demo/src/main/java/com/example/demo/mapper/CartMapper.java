@@ -17,9 +17,10 @@ public interface CartMapper {
 
     @Mapping(target = "productId", source = "product.id")
     @Mapping(target = "productName", source = "product.name")
+    @Mapping(target = "price", source = "product.price") // Add this mapping
     CartItemDTO toDTO(CartItem cartItem);
 
     @Mapping(target = "product.id", source = "productId")
-    @Mapping(target = "cart", ignore = true) // Add this line to ignore the cart property
+    @Mapping(target = "cart", ignore = true)
     CartItem toEntity(CartItemDTO cartItemDTO);
 }

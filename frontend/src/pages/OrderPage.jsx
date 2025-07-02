@@ -47,6 +47,12 @@ const OrderPage = () => {
         }
     };
 
+    const calculateTotal = () => {
+        if (!cart || !cart.items) return '0.00';
+        return cart.items.reduce((total, item) => total + (item.price * item.quantity), 0).toFixed(2);
+    };
+
+
     if (error) {
         return <p className="text-red-500 text-center">{error}</p>;
     }
@@ -54,14 +60,6 @@ const OrderPage = () => {
     if (!cart) {
         return <p className="text-center">Loading your order details...</p>;
     }
-
-    const calculateTotal = () => {
-        if (!cart || !cart.items) return '0.00';
-        // Note: This is a frontend calculation. The backend should always perform the authoritative price calculation.
-        // This assumes your CartItemDTO will eventually include price information.
-        // For now, we'll just show the items.
-        return cart.items.reduce((total, item) => total + (item.price * item.quantity), 0).toFixed(2);
-    };
 
 
     return (
@@ -71,16 +69,20 @@ const OrderPage = () => {
             {cart.items.length === 0 && !success ? (
                 <p className="text-center">Your cart is empty. Add items before placing an order.</p>
             ) : (
-                <div className="max-w-2xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
                     {/* Order Summary */}
                     <div className="bg-white p-6 rounded-lg shadow-md">
                         <h2 className="text-xl font-semibold mb-4 border-b pb-2">Order Summary</h2>
                         {cart.items.map(item => (
                             <div key={item.id} className="flex justify-between items-center mb-2">
-                                <span className="text-gray-700">{item.productName}</span>
-                                <span className="text-gray-600">Qty: {item.quantity}</span>
+                                <span className="text-gray-700">{item.productName} (x{item.quantity})</span>
+                                <span className="text-gray-800 font-medium">${(item.price * item.quantity).toFixed(2)}</span>
                             </div>
                         ))}
+                        <div className="flex justify-between items-center mt-4 pt-4 border-t">
+                            <span className="font-bold text-lg">Total</span>
+                            <span className="font-bold text-lg text-pink-500">${calculateTotal()}</span>
+                        </div>
                     </div>
 
                     {/* Delivery Information Form */}
