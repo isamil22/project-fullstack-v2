@@ -14,6 +14,22 @@ COPY pom.xml .
 # Make the mvnw script executable
 RUN chmod +x mvnw
 
+# --- START: ADDED COMMANDS TO FIX SSL/TLS ERROR ---
+
+# Install OpenSSL to handle certificates and clean up afterward
+RUN apt-get update && \
+    apt-get install -y openssl && \
+    rm -rf /var/lib/apt/lists/*
+
+# Download the SSL certificate from the Brevo SMTP server
+RUN openssl s_client -connect smtp-relay.brevo.com:587 -starttls smtp < /dev/null 2>/dev/null | openssl x509 -outform pem > /tmp/brevo.pem
+
+# Import the downloaded certificate into the Java's default truststore
+# The default password for the Java truststore is "changeit"
+RUN keytool -import -trustcacerts -keystore "$JAVA_HOME/lib/security/cacerts" -storepass changeit -noprompt -alias brevo.com -file /tmp/brevo.pem
+
+# --- END: ADDED COMMANDS ---
+
 # Download dependencies. This will use the pom.xml to download all necessary libraries.
 RUN ./mvnw dependency:go-offline
 
