@@ -47,7 +47,7 @@ services:
     buildContext: ./frontend # <--- This fixes the frontend build
     dockerfilePath: Dockerfile
     envVars:
-      - key: VITE_RECAPTCHA_SITE_KEY # <--- This is needed for the frontend
+      - key: VITE_RECAPTCHA_SITE_KEY
         sync: false
 
 databases:
