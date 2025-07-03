@@ -3,11 +3,10 @@ services:
   - type: web
     name: backend
     env: docker
-    plan: free # <--- ADD THIS LINE
+    plan: free
     repo: https://github.com/isamil22/project-fullstack-v2.git
     dockerfilePath: ./demo/Dockerfile
     envVars:
-      # Database connection - automatically injected by Render
       - key: SPRING_DATASOURCE_URL
         fromDatabase:
           name: my-postgres-db
@@ -20,7 +19,6 @@ services:
         fromDatabase:
           name: my-postgres-db
           property: password
-      # Secrets - you will enter these values on the Render dashboard
       - key: JWT_SECRET
         generateValue: true
       - key: GMAIL_USERNAME
@@ -42,9 +40,12 @@ services:
   - type: web
     name: frontend
     env: docker
-    plan: free # <--- AND ADD THIS LINE
+    plan: free
     repo: https://github.com/isamil22/project-fullstack-v2.git
     dockerfilePath: ./frontend/Dockerfile
+    envVars: # <--- This is the crucial addition
+      - key: VITE_RECAPTCHA_SITE_KEY
+        sync: false
 
 databases:
   # A new, managed PostgreSQL database for production
