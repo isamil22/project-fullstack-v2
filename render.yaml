@@ -35,7 +35,7 @@ services:
         sync: false
       - key: AWS_REGION
         sync: false
-      - key: FRONTEND_URL # Added this key
+      - key: FRONTEND_URL
         sync: false
 
   # The React Frontend Service (Served with Nginx)
