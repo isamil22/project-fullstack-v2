@@ -35,6 +35,8 @@ services:
         sync: false
       - key: AWS_REGION
         sync: false
+      - key: FRONTEND_URL # Added this key
+        sync: false
 
   # The React Frontend Service (Served with Nginx)
   - type: web
@@ -43,7 +45,7 @@ services:
     plan: free
     repo: https://github.com/isamil22/project-fullstack-v2.git
     dockerfilePath: ./frontend/Dockerfile
-    envVars: # <--- This is the crucial addition
+    envVars:
       - key: VITE_RECAPTCHA_SITE_KEY
         sync: false
 
