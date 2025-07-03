@@ -1,0 +1,55 @@
+services:
+  # The Spring Boot Backend Service
+  - type: web
+    name: backend
+    env: docker
+    repo: https://github.com/isamil22/project-fullstack-v2.git #<-- Use your actual repo URL
+    dockerfilePath: ./demo/Dockerfile
+    envVars:
+      - key: SPRING_DATASOURCE_URL
+        fromDatabase:
+          name: my-postgres-db # This name must match the database name below
+          property: connectionString
+      - key: SPRING_DATASOURCE_USERNAME
+        fromDatabase:
+          name: my-postgres-db
+          property: user
+      - key: SPRING_DATASOURCE_PASSWORD
+        fromDatabase:
+          name: my-postgres-db
+          property: password
+      - key: JWT_SECRET
+        generateValue: true # Let Render generate a secure secret
+      - key: RECAPTCHA_SECRET
+        sync: false
+      - key: AWS_ACCESS_KEY_ID
+        sync: false
+      - key: AWS_SECRET_ACCESS_KEY
+        sync: false
+      - key: AWS_S3_BUCKET_NAME
+        sync: false
+      - key: AWS_REGION
+        sync: false
+
+  # The React Frontend Service (Served with Nginx)
+  - type: web
+    name: frontend
+    env: docker
+    repo: https://github.com/isamil22/project-fullstack-v2.git #<-- Use your actual repo URL
+    dockerfilePath: ./frontend/Dockerfile
+    routes:
+      # Proxy API requests to the backend (Handled by Render's network)
+      - type: rewrite
+        source: /api/:path
+        destination: http://backend:8080/api/:path
+      # Serve the React app for all other requests
+      - type: rewrite
+        source: /*
+        destination: /index.html
+# This section was on the wrong line before. It is now corrected.
+databases:
+  # A new, managed PostgreSQL database for production
+  - name: my-postgres-db # This name must match the names used above
+    databaseName: production_db
+    user: db_user
+    plan: free
