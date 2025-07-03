@@ -44,8 +44,8 @@ services:
     env: docker
     plan: free
     repo: https://github.com/isamil22/project-fullstack-v2.git
-    buildContext: ./frontend # <--- This fixes the frontend build
-    dockerfilePath: Dockerfile
+    buildContext: . # Set context to the project root
+    dockerfilePath: ./frontend/Dockerfile # Explicit path to the Dockerfile
     envVars:
       - key: VITE_RECAPTCHA_SITE_KEY
         sync: false
