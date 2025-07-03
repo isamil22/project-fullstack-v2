@@ -6,7 +6,7 @@ services:
     repo: https://github.com/isamil22/project-fullstack-v2.git
     dockerfilePath: ./demo/Dockerfile
     envVars:
-      # Database connection - automatically injected by Render from the database service below
+      # Database connection - automatically injected by Render
       - key: SPRING_DATASOURCE_URL
         fromDatabase:
           name: my-postgres-db
@@ -19,15 +19,9 @@ services:
         fromDatabase:
           name: my-postgres-db
           property: password
-      # The URL of your live frontend - Render provides this automatically
-      - key: FRONTEND_URL
-        fromService:
-          type: web
-          name: frontend
-          property: url
-      # Secrets - you will enter the values for these on the Render dashboard
+      # Secrets - you will enter these values on the Render dashboard
       - key: JWT_SECRET
-        generateValue: true # Let Render create a secure secret for you
+        generateValue: true
       - key: GMAIL_USERNAME
         sync: false
       - key: GMAIL_PASSWORD
@@ -44,7 +38,6 @@ services:
         sync: false
 
   # The React Frontend Service (Served with Nginx)
-  # NOTE: The 'routes' block is removed because Nginx now handles the API proxy.
   - type: web
     name: frontend
     env: docker
