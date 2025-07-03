@@ -49,6 +49,8 @@ services:
     envVars:
       - key: VITE_RECAPTCHA_SITE_KEY
         sync: false
+    depends_on:
+      - backend
 
 databases:
   # A new, managed PostgreSQL database for production
