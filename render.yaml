@@ -35,7 +35,7 @@ services:
         sync: false
       - key: AWS_REGION
         sync: false
-      - key: FRONTEND_URL # <--- FIX #1 FOR BACKEND
+      - key: FRONTEND_URL
         sync: false
 
   # The React Frontend Service (Served with Nginx)
@@ -44,10 +44,10 @@ services:
     env: docker
     plan: free
     repo: https://github.com/isamil22/project-fullstack-v2.git
-    buildContext: ./frontend # <--- FIX #2 FOR FRONTEND
+    buildContext: ./frontend # <--- This fixes the frontend build
     dockerfilePath: Dockerfile
     envVars:
-      - key: VITE_RECAPTCHA_SITE_KEY
+      - key: VITE_RECAPTCHA_SITE_KEY # <--- This is needed for the frontend
         sync: false
 
 databases:
