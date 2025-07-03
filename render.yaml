@@ -3,6 +3,7 @@ services:
   - type: web
     name: backend
     env: docker
+    plan: free # <--- ADD THIS LINE
     repo: https://github.com/isamil22/project-fullstack-v2.git
     dockerfilePath: ./demo/Dockerfile
     envVars:
@@ -41,6 +42,7 @@ services:
   - type: web
     name: frontend
     env: docker
+    plan: free # <--- AND ADD THIS LINE
     repo: https://github.com/isamil22/project-fullstack-v2.git
     dockerfilePath: ./frontend/Dockerfile
 
