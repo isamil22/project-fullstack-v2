@@ -6,7 +6,7 @@ COPY src ./src
 RUN mvn clean install -DskipTests
 
 # Stage 2: Create the final, smaller image
-FROM openjdk:17-jre-slim
+FROM openjdk:17.0.2-jre-slim
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 EXPOSE 8080
