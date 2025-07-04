@@ -6,7 +6,7 @@ services:
     plan: free
     repo: https://github.com/isamil22/project-fullstack-v2.git
     dockerfilePath: ./demo/Dockerfile
-    healthCheck: # <<< ADD THIS BLOCK
+    healthCheck:
       path: /api/hello
     envVars:
       - key: SPRING_DATASOURCE_URL
