@@ -47,6 +47,9 @@ services:
     buildContext: . # Set context to the project root
     dockerfilePath: ./frontend/Dockerfile # Explicit path to the Dockerfile
     envVars:
+      # --- THIS LINE IS THE FIX ---
+      - key: VITE_API_URL
+        value: ${BACKEND_URL}
       - key: VITE_RECAPTCHA_SITE_KEY
         sync: false
     depends_on:

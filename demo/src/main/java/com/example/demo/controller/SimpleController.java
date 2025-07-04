@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping; // <-- IMPORT THIS
 import org.springframework.web.bind.annotation.RequestBody; // <-- IMPORT THIS
@@ -9,6 +10,11 @@ import java.util.HashMap;
 
 @RestController
 public class SimpleController {
+    // --- ADD THIS NEW METHOD ---
+    @GetMapping("/")
+    public ResponseEntity<String> healthCheck() {
+        return ResponseEntity.ok("API is running.");
+    }
 
     @GetMapping("/api/hello")
     public Map<String, String> sayHello() {
